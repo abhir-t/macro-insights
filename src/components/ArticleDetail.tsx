@@ -24,7 +24,7 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12"
+      className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12 pb-24 sm:pb-12"
     >
       {/* Back Button */}
       <motion.div
@@ -107,7 +107,7 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5, duration: 0.6 }}
-        className="prose max-w-none"
+        className="prose max-w-none overflow-visible"
       >
         <ReactMarkdown
           rehypePlugins={[rehypeRaw]}
@@ -119,14 +119,16 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5 }}
-                className="my-6 sm:my-8 -mx-4 sm:mx-0 border-l-4 border-[var(--accent)] bg-white sm:rounded-r-lg shadow-lg overflow-hidden"
+                className="my-6 sm:my-8 relative left-1/2 right-1/2 -translate-x-1/2 w-screen sm:w-full sm:left-0 sm:right-0 sm:translate-x-0"
               >
-                <div className="relative w-full" style={{ paddingBottom: '75%' }}>
-                  <iframe
-                    src={src}
-                    {...props}
-                    className="absolute inset-0 w-full h-full border-0"
-                  />
+                <div className="border-l-4 border-[var(--accent)] bg-white sm:rounded-r-lg shadow-lg overflow-hidden mx-0 sm:mx-0">
+                  <div className="relative w-full" style={{ paddingBottom: '75%' }}>
+                    <iframe
+                      src={src}
+                      {...props}
+                      className="absolute inset-0 w-full h-full border-0"
+                    />
+                  </div>
                 </div>
               </motion.div>
             ),
@@ -137,7 +139,7 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5 }}
-                className="block my-6 sm:my-8 -mx-4 sm:mx-0"
+                className="block my-6 sm:my-8 relative left-1/2 right-1/2 -translate-x-1/2 w-screen sm:w-full sm:left-0 sm:right-0 sm:translate-x-0"
               >
                 <img
                   src={src}

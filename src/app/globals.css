@@ -25,6 +25,7 @@ html, body {
   margin: 0;
   padding: 0;
   background: var(--background);
+  overflow-x: hidden;
 }
 
 body {
@@ -242,6 +243,13 @@ body {
 body::after {
   content: '';
   display: block;
-  height: 60px;
+  height: 80px;
   background: var(--dark);
+}
+
+/* Extra bottom padding for mobile nav */
+@media (max-width: 767px) {
+  body::after {
+    height: 70px;
+  }
 }
