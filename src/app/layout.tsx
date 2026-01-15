@@ -22,6 +22,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Vantage Post",
   description: "Business, Finance & Market Intelligence",
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({
