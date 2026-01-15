@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { addArticle, getArticles, deleteArticle, updateArticle } from '@/lib/firestore';
 import { Article } from '@/types';
 
 export default function AdminForm() {
+  const contentRef = useRef<HTMLTextAreaElement>(null);
+
   const [formData, setFormData] = useState({
     title: '',
     excerpt: '',
@@ -25,6 +27,30 @@ export default function AdminForm() {
     const wordCount = content.trim().split(/\s+/).length;
     const minutes = Math.ceil(wordCount / wordsPerMinute);
     return `${minutes} min read`;
+  };
+
+  const insertFormat = (before: string, after: string) => {
+    const textarea = contentRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = formData.content.substring(start, end);
+    const newContent =
+      formData.content.substring(0, start) +
+      before +
+      (selectedText || 'text here') +
+      after +
+      formData.content.substring(end);
+
+    setFormData((prev) => ({ ...prev, content: newContent }));
+
+    // Restore focus and cursor position
+    setTimeout(() => {
+      textarea.focus();
+      const newCursorPos = start + before.length + (selectedText || 'text here').length;
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
   };
 
   const fetchArticles = async () => {
@@ -264,46 +290,81 @@ export default function AdminForm() {
 
           <div>
             <label htmlFor="content" className="block text-sm font-medium mb-2">
-              Content (Markdown + HTML for charts)
+              Content (Markdown + HTML)
             </label>
-            <details className="mb-3 text-xs border border-slate-200 rounded">
-              <summary className="px-3 py-2 bg-slate-50 cursor-pointer font-medium text-slate-700">
-                Formatting Guide (click to expand)
-              </summary>
-              <div className="p-3 space-y-3 text-slate-600">
-                <div>
-                  <p className="font-semibold text-slate-700 mb-1">Basic Markdown:</p>
-                  <p><code className="bg-slate-100 px-1">## Heading</code> → Section heading</p>
-                  <p><code className="bg-slate-100 px-1">**bold**</code> → Red highlighted text</p>
-                  <p><code className="bg-slate-100 px-1">- item</code> → Bullet list</p>
-                  <p><code className="bg-slate-100 px-1">[link](url)</code> → Hyperlink</p>
-                </div>
-                <div>
-                  <p className="font-semibold text-slate-700 mb-1">Text Sizes:</p>
-                  <p><code className="bg-slate-100 px-1">&lt;span class=&quot;text-sm&quot;&gt;Small text&lt;/span&gt;</code></p>
-                  <p><code className="bg-slate-100 px-1">&lt;span class=&quot;text-lg&quot;&gt;Large text&lt;/span&gt;</code></p>
-                  <p className="text-slate-500">Options: text-xs, text-sm, text-base, text-lg, text-xl, text-2xl</p>
-                </div>
-                <div>
-                  <p className="font-semibold text-slate-700 mb-1">Line Spacing:</p>
-                  <p><code className="bg-slate-100 px-1">&lt;p class=&quot;leading-loose&quot;&gt;...&lt;/p&gt;</code></p>
-                  <p className="text-slate-500">Options: leading-tight, leading-snug, leading-normal, leading-relaxed, leading-loose</p>
-                </div>
-                <div>
-                  <p className="font-semibold text-slate-700 mb-1">Special Sections:</p>
-                  <p><code className="bg-slate-100 px-1">&lt;div class=&quot;sources&quot;&gt;Sources...&lt;/div&gt;</code> → Small muted sources section</p>
-                  <p><code className="bg-slate-100 px-1">&lt;p class=&quot;caption&quot;&gt;Caption&lt;/p&gt;</code> → Image caption style</p>
-                  <p><code className="bg-slate-100 px-1">&lt;div class=&quot;note&quot;&gt;Note...&lt;/div&gt;</code> → Gray note box</p>
-                  <p><code className="bg-slate-100 px-1">&lt;div class=&quot;highlight-box&quot;&gt;...&lt;/div&gt;</code> → Yellow highlight box</p>
-                </div>
-                <div>
-                  <p className="font-semibold text-slate-700 mb-1">Colors:</p>
-                  <p><code className="bg-slate-100 px-1">&lt;span class=&quot;text-muted&quot;&gt;Gray text&lt;/span&gt;</code></p>
-                  <p><code className="bg-slate-100 px-1">&lt;span class=&quot;text-accent&quot;&gt;Red text&lt;/span&gt;</code></p>
-                </div>
+
+            {/* Quick Format Buttons */}
+            <div className="mb-2 p-3 bg-slate-50 border border-slate-200 rounded">
+              <p className="text-xs text-slate-500 mb-2">Click to insert at cursor:</p>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => insertFormat('## ', '')}
+                  className="px-2 py-1 text-xs bg-white border border-slate-300 rounded hover:bg-slate-100"
+                >
+                  Heading
+                </button>
+                <button
+                  type="button"
+                  onClick={() => insertFormat('**', '**')}
+                  className="px-2 py-1 text-xs bg-white border border-slate-300 rounded hover:bg-slate-100"
+                >
+                  Bold
+                </button>
+                <button
+                  type="button"
+                  onClick={() => insertFormat('<span class="text-sm">', '</span>')}
+                  className="px-2 py-1 text-xs bg-white border border-slate-300 rounded hover:bg-slate-100"
+                >
+                  Small Text
+                </button>
+                <button
+                  type="button"
+                  onClick={() => insertFormat('<span class="text-lg">', '</span>')}
+                  className="px-2 py-1 text-xs bg-white border border-slate-300 rounded hover:bg-slate-100"
+                >
+                  Large Text
+                </button>
+                <button
+                  type="button"
+                  onClick={() => insertFormat('<span class="text-muted">', '</span>')}
+                  className="px-2 py-1 text-xs bg-white border border-slate-300 rounded hover:bg-slate-100"
+                >
+                  Gray Text
+                </button>
+                <button
+                  type="button"
+                  onClick={() => insertFormat('<div class="sources">\n\n', '\n\n</div>')}
+                  className="px-2 py-1 text-xs bg-white border border-slate-300 rounded hover:bg-slate-100"
+                >
+                  Sources Section
+                </button>
+                <button
+                  type="button"
+                  onClick={() => insertFormat('<p class="caption">', '</p>')}
+                  className="px-2 py-1 text-xs bg-white border border-slate-300 rounded hover:bg-slate-100"
+                >
+                  Caption
+                </button>
+                <button
+                  type="button"
+                  onClick={() => insertFormat('<div class="note">\n', '\n</div>')}
+                  className="px-2 py-1 text-xs bg-white border border-slate-300 rounded hover:bg-slate-100"
+                >
+                  Note Box
+                </button>
+                <button
+                  type="button"
+                  onClick={() => insertFormat('<div class="highlight-box">\n', '\n</div>')}
+                  className="px-2 py-1 text-xs bg-white border border-slate-300 rounded hover:bg-slate-100"
+                >
+                  Highlight Box
+                </button>
               </div>
-            </details>
+            </div>
+
             <textarea
+              ref={contentRef}
               id="content"
               name="content"
               value={formData.content}
