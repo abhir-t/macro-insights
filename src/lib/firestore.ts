@@ -61,7 +61,7 @@ export async function getArticleById(id: string): Promise<Article | null> {
   } as Article;
 }
 
-export async function addArticle(article: Omit<Article, 'id'>): Promise<string> {
+export async function addArticle(article: Omit<Article, 'id' | 'date'>): Promise<string> {
   if (!isConfigured || !db) {
     throw new Error('Firebase is not configured');
   }

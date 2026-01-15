@@ -3,7 +3,6 @@ import { Resend } from 'resend';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
 import { db, isConfigured } from '@/lib/firebase';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const SUBSCRIBERS_PATH = 'artifacts/macro-insights/public/data/subscribers';
 
 export async function POST(request: Request) {
@@ -24,10 +23,11 @@ export async function POST(request: Request) {
     }
 
     // Send notification email to you
-    if (process.env.RESEND_API_KEY) {
+    if (process.env.RESEND_API_KEY && process.env.NOTIFICATION_EMAIL) {
+      const resend = new Resend(process.env.RESEND_API_KEY);
       await resend.emails.send({
         from: 'Vantage Post <onboarding@resend.dev>',
-        to: process.env.NOTIFICATION_EMAIL || 'your-email@gmail.com',
+        to: process.env.NOTIFICATION_EMAIL,
         subject: 'New Subscriber on Vantage Post!',
         html: `
           <h2>New Subscriber!</h2>

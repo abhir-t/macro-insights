@@ -12,5 +12,5 @@ export interface Article {
 
 export interface Subscriber {
   email: string;
-  subscribedAt: Timestamp;
+  subscribedAt: { seconds: number; nanoseconds: number };
 }
