@@ -21,39 +21,11 @@
   --font-sans: var(--font-inter);
 }
 
-html {
-  overflow-x: hidden;
-  max-width: 100%;
-}
-
-body {
+html, body {
   margin: 0;
   padding: 0;
   background: var(--background);
   overflow-x: hidden;
-  max-width: 100%;
-  width: 100%;
-}
-
-/* Force all iframes to be responsive */
-iframe {
-  max-width: 100% !important;
-  width: 100% !important;
-  height: auto;
-  min-height: 250px;
-}
-
-/* Prevent any element from causing horizontal overflow */
-*, *::before, *::after {
-  max-width: 100%;
-  box-sizing: border-box;
-}
-
-/* Specific fix for article content */
-.prose iframe,
-.prose img {
-  max-width: 100% !important;
-  height: auto !important;
 }
 
 body {

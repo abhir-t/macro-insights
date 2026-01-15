@@ -112,18 +112,18 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
         <ReactMarkdown
           rehypePlugins={[rehypeRaw]}
           components={{
-            // Charts - simple responsive iframe
+            // Charts - horizontally scrollable container for Google Sheets
             iframe: ({ src }) => (
-              <div className="my-6 sm:my-8 w-full max-w-full overflow-hidden">
-                <div className="border-l-4 border-[var(--accent)] bg-white rounded-r-lg shadow-lg overflow-hidden">
-                  <div style={{ position: 'relative', paddingBottom: '70%', height: 0, overflow: 'hidden' }}>
-                    <iframe
-                      src={src}
-                      frameBorder="0"
-                      scrolling="no"
-                      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
-                    />
-                  </div>
+              <div className="my-6 sm:my-8 border-l-4 border-[var(--accent)] bg-white rounded-r-lg shadow-lg">
+                <div className="overflow-x-auto">
+                  <iframe
+                    src={src}
+                    width="600"
+                    height="400"
+                    frameBorder="0"
+                    scrolling="no"
+                    style={{ border: 'none', display: 'block', minWidth: '600px' }}
+                  />
                 </div>
               </div>
             ),
