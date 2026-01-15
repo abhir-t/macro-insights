@@ -16,7 +16,7 @@ export async function POST(request: Request) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        email,
+        email_address: email,
         tags: ['website'],
       }),
     });
