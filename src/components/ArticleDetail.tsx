@@ -118,11 +118,11 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
                 <div className="overflow-x-auto">
                   <iframe
                     src={src}
-                    width="600"
-                    height="400"
+                    width="1100"
+                    height="500"
                     frameBorder="0"
                     scrolling="no"
-                    style={{ border: 'none', display: 'block', minWidth: '600px' }}
+                    style={{ border: 'none', display: 'block', minWidth: '1100px' }}
                   />
                 </div>
               </div>
