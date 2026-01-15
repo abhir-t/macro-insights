@@ -37,11 +37,15 @@ export async function POST(request: Request) {
         if (error.code === 'email_already_exists' || errorText.includes('already')) {
           return NextResponse.json({ success: true, message: 'Already subscribed' });
         }
+        // If blocked by firewall (spam protection)
+        if (error.code === 'subscriber_blocked') {
+          return NextResponse.json({ error: 'Please use a valid email address' }, { status: 400 });
+        }
       } catch {
         // Ignore JSON parse error
       }
 
-      return NextResponse.json({ error: 'Failed to subscribe', details: errorText }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to subscribe' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });
