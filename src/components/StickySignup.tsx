@@ -8,7 +8,7 @@ import confetti from 'canvas-confetti';
 export default function StickySignup() {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [isMinimized, setIsMinimized] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(true); // Start minimized
   const [hasAnimated, setHasAnimated] = useState(false);
   const [hasSubscribed, setHasSubscribed] = useState(true); // Start hidden until we check
   const pathname = usePathname();
@@ -18,7 +18,11 @@ export default function StickySignup() {
     // Check if user already subscribed
     const subscribed = localStorage.getItem('vp_subscribed');
     setHasSubscribed(!!subscribed);
-  }, []);
+    // Only expand on home page
+    if (pathname === '/writeups') {
+      setIsMinimized(false);
+    }
+  }, [pathname]);
 
   const fireConfetti = () => {
     const count = 200;
@@ -89,8 +93,8 @@ export default function StickySignup() {
     }
   };
 
-  // Only show on home page (/writeups) and if not subscribed
-  if (hasSubscribed || pathname !== '/writeups') {
+  // Hide if already subscribed
+  if (hasSubscribed) {
     return null;
   }
 

@@ -24,7 +24,7 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="max-w-4xl mx-auto px-6 py-12"
+      className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12"
     >
       {/* Back Button */}
       <motion.div
@@ -112,40 +112,40 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
         <ReactMarkdown
           rehypePlugins={[rehypeRaw]}
           components={{
-            // Charts - uniform sizing with accent border
+            // Charts - responsive with aspect ratio
             iframe: ({ src, ...props }) => (
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5 }}
-                className="my-8 border-l-4 border-[var(--accent)] bg-white rounded-r-lg shadow-lg overflow-hidden"
+                className="my-6 sm:my-8 -mx-4 sm:mx-0 border-l-4 border-[var(--accent)] bg-white sm:rounded-r-lg shadow-lg overflow-hidden"
               >
-                <iframe
-                  src={src}
-                  width="100%"
-                  height="400"
-                  {...props}
-                  className="border-0 block"
-                />
+                <div className="relative w-full" style={{ paddingBottom: '75%' }}>
+                  <iframe
+                    src={src}
+                    {...props}
+                    className="absolute inset-0 w-full h-full border-0"
+                  />
+                </div>
               </motion.div>
             ),
-            // Custom image handling with animation
+            // Custom image handling - full width on mobile
             img: ({ src, alt }) => (
               <motion.span
                 initial={{ opacity: 0, scale: 0.95 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5 }}
-                className="block my-8"
+                className="block my-6 sm:my-8 -mx-4 sm:mx-0"
               >
                 <img
                   src={src}
                   alt={alt || ''}
-                  className="w-full rounded-lg shadow-lg"
+                  className="w-full sm:rounded-lg shadow-lg"
                 />
                 {alt && (
-                  <span className="block text-center text-sm text-[var(--muted)] mt-3 italic">
+                  <span className="block text-center text-sm text-[var(--muted)] mt-3 italic px-4 sm:px-0">
                     {alt}
                   </span>
                 )}
