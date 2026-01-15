@@ -8,6 +8,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
     }
 
+    // Check if API key is set
+    if (!process.env.BUTTONDOWN_API_KEY) {
+      console.error('BUTTONDOWN_API_KEY is not set');
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+    }
+
     // Add subscriber to Buttondown
     const response = await fetch('https://api.buttondown.email/v1/subscribers', {
       method: 'POST',
@@ -22,12 +28,20 @@ export async function POST(request: Request) {
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      // If already subscribed, still return success
-      if (error.code === 'email_already_exists') {
-        return NextResponse.json({ success: true, message: 'Already subscribed' });
+      const errorText = await response.text();
+      console.error('Buttondown API error:', response.status, errorText);
+
+      try {
+        const error = JSON.parse(errorText);
+        // If already subscribed, still return success
+        if (error.code === 'email_already_exists' || errorText.includes('already')) {
+          return NextResponse.json({ success: true, message: 'Already subscribed' });
+        }
+      } catch {
+        // Ignore JSON parse error
       }
-      throw new Error(error.detail || 'Failed to subscribe');
+
+      return NextResponse.json({ error: 'Failed to subscribe', details: errorText }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });
