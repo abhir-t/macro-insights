@@ -112,23 +112,24 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
         <ReactMarkdown
           rehypePlugins={[rehypeRaw]}
           components={{
-            // Charts - responsive with aspect ratio
-            iframe: ({ src, ...props }) => (
+            // Charts - responsive with aspect ratio (ignore hardcoded width/height)
+            iframe: ({ src }) => (
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5 }}
-                className="my-6 sm:my-8 relative left-1/2 right-1/2 -translate-x-1/2 w-screen sm:w-full sm:left-0 sm:right-0 sm:translate-x-0"
+                className="my-6 sm:my-8 -mx-4 sm:mx-0 border-l-4 border-[var(--accent)] bg-white sm:rounded-r-lg shadow-lg overflow-hidden"
               >
-                <div className="border-l-4 border-[var(--accent)] bg-white sm:rounded-r-lg shadow-lg overflow-hidden mx-0 sm:mx-0">
-                  <div className="relative w-full" style={{ paddingBottom: '75%' }}>
-                    <iframe
-                      src={src}
-                      {...props}
-                      className="absolute inset-0 w-full h-full border-0"
-                    />
-                  </div>
+                <div className="relative w-full" style={{ paddingBottom: '65%' }}>
+                  <iframe
+                    src={src}
+                    seamless
+                    frameBorder="0"
+                    scrolling="no"
+                    className="absolute inset-0 w-full h-full border-0"
+                    style={{ width: '100%', height: '100%' }}
+                  />
                 </div>
               </motion.div>
             ),
@@ -139,12 +140,12 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5 }}
-                className="block my-6 sm:my-8 relative left-1/2 right-1/2 -translate-x-1/2 w-screen sm:w-full sm:left-0 sm:right-0 sm:translate-x-0"
+                className="block my-6 sm:my-8 -mx-4 sm:mx-0"
               >
                 <img
                   src={src}
                   alt={alt || ''}
-                  className="w-full sm:rounded-lg shadow-lg"
+                  className="w-full sm:rounded-lg shadow-lg max-w-none"
                 />
                 {alt && (
                   <span className="block text-center text-sm text-[var(--muted)] mt-3 italic px-4 sm:px-0">
