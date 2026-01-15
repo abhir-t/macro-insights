@@ -1,9 +1,4 @@
 import { NextResponse } from 'next/server';
-import { Resend } from 'resend';
-import { collection, addDoc, Timestamp } from 'firebase/firestore';
-import { db, isConfigured } from '@/lib/firebase';
-
-const SUBSCRIBERS_PATH = 'artifacts/macro-insights/public/data/subscribers';
 
 export async function POST(request: Request) {
   try {
@@ -13,28 +8,26 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
     }
 
-    // Add to Firebase
-    if (isConfigured && db) {
-      const subscribersRef = collection(db, SUBSCRIBERS_PATH);
-      await addDoc(subscribersRef, {
+    // Add subscriber to Buttondown
+    const response = await fetch('https://api.buttondown.email/v1/subscribers', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Token ${process.env.BUTTONDOWN_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
         email,
-        subscribedAt: Timestamp.now(),
-      });
-    }
+        tags: ['website'],
+      }),
+    });
 
-    // Send notification email to you
-    if (process.env.RESEND_API_KEY && process.env.NOTIFICATION_EMAIL) {
-      const resend = new Resend(process.env.RESEND_API_KEY);
-      await resend.emails.send({
-        from: 'Vantage Post <onboarding@resend.dev>',
-        to: process.env.NOTIFICATION_EMAIL,
-        subject: 'New Subscriber on Vantage Post!',
-        html: `
-          <h2>New Subscriber!</h2>
-          <p><strong>Email:</strong> ${email}</p>
-          <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
-        `,
-      });
+    if (!response.ok) {
+      const error = await response.json();
+      // If already subscribed, still return success
+      if (error.code === 'email_already_exists') {
+        return NextResponse.json({ success: true, message: 'Already subscribed' });
+      }
+      throw new Error(error.detail || 'Failed to subscribe');
     }
 
     return NextResponse.json({ success: true });
