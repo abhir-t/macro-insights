@@ -127,50 +127,44 @@ export default function ContactPage() {
               <h3 className="text-sm font-semibold uppercase tracking-wider text-[var(--accent)] mb-3">
                 Email
               </h3>
-              <a
-                href="mailto:abhirt8718@gmail.com"
-                className="text-lg hover:text-[var(--accent)] transition-colors"
-              >
-                abhirt8718@gmail.com
-              </a>
-            </div>
-
-            <div>
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-[var(--accent)] mb-3">
-                Follow Us
-              </h3>
-              <div className="flex gap-4">
+              <div className="flex flex-col gap-2">
                 <a
-                  href="https://twitter.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[var(--muted)] hover:text-[var(--accent)] transition-colors"
+                  href="mailto:abhirt8718@gmail.com"
+                  className="text-lg hover:text-[var(--accent)] transition-colors"
                 >
-                  Twitter
+                  abhirt8718@gmail.com
                 </a>
                 <a
-                  href="https://linkedin.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[var(--muted)] hover:text-[var(--accent)] transition-colors"
+                  href="mailto:paranjayat@outlook.com"
+                  className="text-lg hover:text-[var(--accent)] transition-colors"
                 >
-                  LinkedIn
+                  paranjayat@outlook.com
                 </a>
               </div>
             </div>
 
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-wider text-[var(--accent)] mb-3">
-                Support Us
+                Connect With Us
               </h3>
-              <a
-                href="https://buymeacoffee.com/macroinsights"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--dark)] text-white text-sm hover:bg-black transition-colors rounded"
-              >
-                ☕ Buy us a coffee
-              </a>
+              <div className="flex flex-col gap-3">
+                <a
+                  href="https://www.linkedin.com/in/abhiraa/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[var(--muted)] hover:text-[var(--accent)] transition-colors"
+                >
+                  Abhir on LinkedIn
+                </a>
+                <a
+                  href="https://www.linkedin.com/in/paranjaythorat/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[var(--muted)] hover:text-[var(--accent)] transition-colors"
+                >
+                  Paranjay on LinkedIn
+                </a>
+              </div>
             </div>
           </motion.div>
         </div>
