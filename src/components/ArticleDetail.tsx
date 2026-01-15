@@ -112,27 +112,28 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
         <ReactMarkdown
           rehypePlugins={[rehypeRaw]}
           components={{
-            // Charts - simple responsive iframe (no overflow tricks)
+            // Charts - simple responsive iframe
             iframe: ({ src }) => (
-              <div className="my-6 sm:my-8 border-l-4 border-[var(--accent)] bg-white rounded-r-lg shadow-lg overflow-hidden">
-                <div className="relative w-full" style={{ paddingBottom: '70%', minHeight: '300px' }}>
-                  <iframe
-                    src={src}
-                    seamless
-                    frameBorder="0"
-                    scrolling="no"
-                    className="absolute inset-0 w-full h-full border-0"
-                  />
+              <div className="my-6 sm:my-8 w-full max-w-full overflow-hidden">
+                <div className="border-l-4 border-[var(--accent)] bg-white rounded-r-lg shadow-lg overflow-hidden">
+                  <div style={{ position: 'relative', paddingBottom: '70%', height: 0, overflow: 'hidden' }}>
+                    <iframe
+                      src={src}
+                      frameBorder="0"
+                      scrolling="no"
+                      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+                    />
+                  </div>
                 </div>
               </div>
             ),
             // Images - simple responsive
             img: ({ src, alt }) => (
-              <span className="block my-6 sm:my-8">
+              <span className="block my-6 sm:my-8 w-full max-w-full overflow-hidden">
                 <img
                   src={src}
                   alt={alt || ''}
-                  className="w-full rounded-lg shadow-lg"
+                  style={{ width: '100%', maxWidth: '100%', height: 'auto', display: 'block', borderRadius: '8px' }}
                 />
                 {alt && (
                   <span className="block text-center text-sm text-[var(--muted)] mt-3 italic">

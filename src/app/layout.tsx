@@ -50,7 +50,7 @@ export default function RootLayout({
               <Navigation />
             </div>
           </header>
-          <main className="flex-1 pb-16 md:pb-0">{children}</main>
+          <main className="flex-1 pb-16 md:pb-0 overflow-x-hidden">{children}</main>
           <footer className="bg-[var(--dark)] text-white">
             <div className="max-w-[1400px] mx-auto px-8 lg:px-16 py-6">
               <div className="flex flex-col md:flex-row md:justify-between gap-8 mb-4">
