@@ -95,14 +95,6 @@ export default function RootLayout({
                     <a href="/contact" className="text-white/60 hover:text-white transition-colors text-sm">
                       Contact
                     </a>
-                    <a
-                      href="https://buymeacoffee.com/macroinsights"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-white/60 hover:text-white transition-colors text-sm"
-                    >
-                      Support Us
-                    </a>
                   </div>
                 </div>
               </div>
