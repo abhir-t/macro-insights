@@ -15,11 +15,20 @@ export default function ContactPage() {
     e.preventDefault();
     setStatus('sending');
 
-    // For now, just simulate sending - you can integrate with a form service later
-    setTimeout(() => {
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) throw new Error('Failed to send');
+
       setStatus('sent');
       setFormData({ name: '', email: '', message: '' });
-    }, 1000);
+    } catch {
+      setStatus('error');
+    }
   };
 
   return (

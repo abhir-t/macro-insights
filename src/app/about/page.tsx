@@ -39,10 +39,6 @@ export default function AboutPage() {
             <li><strong>Data Visualizations</strong> - Complex data made simple through infographics</li>
           </ul>
 
-          <h2>Why Subscribe?</h2>
-          <p>
-            Our subscribers get exclusive access to in-depth reports, early insights, and analysis you won't find anywhere else. Join thousands of informed readers who trust Vantage Post for their financial intelligence.
-          </p>
         </div>
 
         <motion.div
