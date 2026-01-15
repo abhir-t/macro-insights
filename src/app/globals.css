@@ -28,6 +28,61 @@ html, body {
   overflow-x: hidden;
 }
 
+/* Text size utilities for article content */
+.text-xs { font-size: 0.75rem; line-height: 1.5; }
+.text-sm { font-size: 0.875rem; line-height: 1.6; }
+.text-base { font-size: 1rem; line-height: 1.7; }
+.text-lg { font-size: 1.125rem; line-height: 1.8; }
+.text-xl { font-size: 1.25rem; line-height: 1.8; }
+.text-2xl { font-size: 1.5rem; line-height: 1.6; }
+
+/* Line spacing utilities */
+.leading-tight { line-height: 1.25; }
+.leading-snug { line-height: 1.375; }
+.leading-normal { line-height: 1.5; }
+.leading-relaxed { line-height: 1.75; }
+.leading-loose { line-height: 2; }
+
+/* Text color utilities */
+.text-muted { color: var(--muted); }
+.text-accent { color: var(--accent); }
+
+/* Special section styles */
+.sources {
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+  padding-top: 1.5rem;
+  margin-top: 2rem;
+}
+
+.sources a {
+  color: var(--accent);
+}
+
+.caption {
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-style: italic;
+  text-align: center;
+}
+
+.highlight-box {
+  background: #fef3c7;
+  border-left: 4px solid var(--accent);
+  padding: 1rem 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.note {
+  font-size: 0.9rem;
+  color: var(--muted);
+  background: #f8fafc;
+  padding: 1rem;
+  border-radius: 4px;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);

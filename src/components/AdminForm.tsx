@@ -266,11 +266,43 @@ export default function AdminForm() {
             <label htmlFor="content" className="block text-sm font-medium mb-2">
               Content (Markdown + HTML for charts)
             </label>
-            <div className="text-xs text-slate-500 mb-2 space-y-1">
-              <p><code className="bg-slate-100 px-1">## Heading</code> → Section heading with red accent</p>
-              <p><code className="bg-slate-100 px-1">**bold text**</code> → Red highlighted text</p>
-              <p><code className="bg-slate-100 px-1">- item</code> → Bullet list</p>
-            </div>
+            <details className="mb-3 text-xs border border-slate-200 rounded">
+              <summary className="px-3 py-2 bg-slate-50 cursor-pointer font-medium text-slate-700">
+                Formatting Guide (click to expand)
+              </summary>
+              <div className="p-3 space-y-3 text-slate-600">
+                <div>
+                  <p className="font-semibold text-slate-700 mb-1">Basic Markdown:</p>
+                  <p><code className="bg-slate-100 px-1">## Heading</code> → Section heading</p>
+                  <p><code className="bg-slate-100 px-1">**bold**</code> → Red highlighted text</p>
+                  <p><code className="bg-slate-100 px-1">- item</code> → Bullet list</p>
+                  <p><code className="bg-slate-100 px-1">[link](url)</code> → Hyperlink</p>
+                </div>
+                <div>
+                  <p className="font-semibold text-slate-700 mb-1">Text Sizes:</p>
+                  <p><code className="bg-slate-100 px-1">&lt;span class=&quot;text-sm&quot;&gt;Small text&lt;/span&gt;</code></p>
+                  <p><code className="bg-slate-100 px-1">&lt;span class=&quot;text-lg&quot;&gt;Large text&lt;/span&gt;</code></p>
+                  <p className="text-slate-500">Options: text-xs, text-sm, text-base, text-lg, text-xl, text-2xl</p>
+                </div>
+                <div>
+                  <p className="font-semibold text-slate-700 mb-1">Line Spacing:</p>
+                  <p><code className="bg-slate-100 px-1">&lt;p class=&quot;leading-loose&quot;&gt;...&lt;/p&gt;</code></p>
+                  <p className="text-slate-500">Options: leading-tight, leading-snug, leading-normal, leading-relaxed, leading-loose</p>
+                </div>
+                <div>
+                  <p className="font-semibold text-slate-700 mb-1">Special Sections:</p>
+                  <p><code className="bg-slate-100 px-1">&lt;div class=&quot;sources&quot;&gt;Sources...&lt;/div&gt;</code> → Small muted sources section</p>
+                  <p><code className="bg-slate-100 px-1">&lt;p class=&quot;caption&quot;&gt;Caption&lt;/p&gt;</code> → Image caption style</p>
+                  <p><code className="bg-slate-100 px-1">&lt;div class=&quot;note&quot;&gt;Note...&lt;/div&gt;</code> → Gray note box</p>
+                  <p><code className="bg-slate-100 px-1">&lt;div class=&quot;highlight-box&quot;&gt;...&lt;/div&gt;</code> → Yellow highlight box</p>
+                </div>
+                <div>
+                  <p className="font-semibold text-slate-700 mb-1">Colors:</p>
+                  <p><code className="bg-slate-100 px-1">&lt;span class=&quot;text-muted&quot;&gt;Gray text&lt;/span&gt;</code></p>
+                  <p><code className="bg-slate-100 px-1">&lt;span class=&quot;text-accent&quot;&gt;Red text&lt;/span&gt;</code></p>
+                </div>
+              </div>
+            </details>
             <textarea
               id="content"
               name="content"
