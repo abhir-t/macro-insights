@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
-import { addSubscriber } from '@/lib/firestore';
 
 export default function StickySignup() {
   const [email, setEmail] = useState('');
@@ -65,7 +64,14 @@ export default function StickySignup() {
 
     setStatus('loading');
     try {
-      await addSubscriber(email);
+      const response = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) throw new Error('Failed to subscribe');
+
       setStatus('success');
       setEmail('');
       fireConfetti();
