@@ -24,7 +24,7 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12 pb-24 sm:pb-12"
+      className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12 pb-24 sm:pb-12 overflow-hidden"
     >
       {/* Back Button */}
       <motion.div
@@ -107,52 +107,39 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5, duration: 0.6 }}
-        className="prose max-w-none overflow-visible"
+        className="prose max-w-none"
       >
         <ReactMarkdown
           rehypePlugins={[rehypeRaw]}
           components={{
-            // Charts - responsive with aspect ratio (ignore hardcoded width/height)
+            // Charts - simple responsive iframe (no overflow tricks)
             iframe: ({ src }) => (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5 }}
-                className="my-6 sm:my-8 -mx-4 sm:mx-0 border-l-4 border-[var(--accent)] bg-white sm:rounded-r-lg shadow-lg overflow-hidden"
-              >
-                <div className="relative w-full" style={{ paddingBottom: '65%' }}>
+              <div className="my-6 sm:my-8 border-l-4 border-[var(--accent)] bg-white rounded-r-lg shadow-lg overflow-hidden">
+                <div className="relative w-full" style={{ paddingBottom: '70%', minHeight: '300px' }}>
                   <iframe
                     src={src}
                     seamless
                     frameBorder="0"
                     scrolling="no"
                     className="absolute inset-0 w-full h-full border-0"
-                    style={{ width: '100%', height: '100%' }}
                   />
                 </div>
-              </motion.div>
+              </div>
             ),
-            // Custom image handling - full width on mobile
+            // Images - simple responsive
             img: ({ src, alt }) => (
-              <motion.span
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5 }}
-                className="block my-6 sm:my-8 -mx-4 sm:mx-0"
-              >
+              <span className="block my-6 sm:my-8">
                 <img
                   src={src}
                   alt={alt || ''}
-                  className="w-full sm:rounded-lg shadow-lg max-w-none"
+                  className="w-full rounded-lg shadow-lg"
                 />
                 {alt && (
-                  <span className="block text-center text-sm text-[var(--muted)] mt-3 italic px-4 sm:px-0">
+                  <span className="block text-center text-sm text-[var(--muted)] mt-3 italic">
                     {alt}
                   </span>
                 )}
-              </motion.span>
+              </span>
             ),
             // Styled headings
             h2: ({ children }) => (
