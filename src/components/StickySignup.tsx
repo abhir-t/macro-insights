@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 
@@ -9,9 +10,14 @@ export default function StickySignup() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [isMinimized, setIsMinimized] = useState(false);
   const [hasAnimated, setHasAnimated] = useState(false);
+  const [hasSubscribed, setHasSubscribed] = useState(true); // Start hidden until we check
+  const pathname = usePathname();
 
   useEffect(() => {
     setHasAnimated(true);
+    // Check if user already subscribed
+    const subscribed = localStorage.getItem('vp_subscribed');
+    setHasSubscribed(!!subscribed);
   }, []);
 
   const fireConfetti = () => {
@@ -75,10 +81,18 @@ export default function StickySignup() {
       setStatus('success');
       setEmail('');
       fireConfetti();
+      // Remember that user subscribed
+      localStorage.setItem('vp_subscribed', 'true');
+      setTimeout(() => setHasSubscribed(true), 3000); // Hide after 3 seconds
     } catch {
       setStatus('error');
     }
   };
+
+  // Only show on home page (/writeups) and if not subscribed
+  if (hasSubscribed || pathname !== '/writeups') {
+    return null;
+  }
 
   return (
     <div className="sticky-footer hidden md:block">
