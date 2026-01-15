@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
+import MobileNav from "@/components/MobileNav";
 import StickySignup from "@/components/StickySignup";
 
 const playfair = Playfair_Display({
@@ -46,7 +47,7 @@ export default function RootLayout({
               <Navigation />
             </div>
           </header>
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 pb-16 md:pb-0">{children}</main>
           <footer className="bg-[var(--dark)] text-white">
             <div className="max-w-[1400px] mx-auto px-8 lg:px-16 py-6">
               <div className="flex flex-col md:flex-row md:justify-between gap-8 mb-4">
@@ -116,6 +117,7 @@ export default function RootLayout({
           </footer>
         </div>
         <StickySignup />
+        <MobileNav />
       </body>
     </html>
   );

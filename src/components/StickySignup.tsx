@@ -81,7 +81,7 @@ export default function StickySignup() {
   };
 
   return (
-    <div className="sticky-footer">
+    <div className="sticky-footer hidden md:block">
       <AnimatePresence mode="wait">
         {isMinimized ? (
           <motion.div
