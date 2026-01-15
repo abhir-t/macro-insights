@@ -1,73 +1,74 @@
-import Image from 'next/image';
+'use client';
+
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { Article } from '@/types';
 
 interface ArticleCardProps {
   article: Article;
   featured?: boolean;
+  index?: number;
 }
 
-export default function ArticleCard({ article, featured = false }: ArticleCardProps) {
-  const formattedDate = article.date?.toDate?.()
-    ? article.date.toDate().toLocaleDateString('en-US', {
+export default function ArticleCard({ article, featured = false, index = 0 }: ArticleCardProps) {
+  const formattedDate = article.date?.seconds
+    ? new Date(article.date.seconds * 1000).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
       })
     : '';
 
-  if (featured) {
-    return (
-      <article className="mb-12">
-        <Link href={`/writeups/${article.id}`} className="group block">
-          {article.imageUrl && (
-            <div className="aspect-[16/9] relative overflow-hidden mb-6">
-              <Image
-                src={article.imageUrl}
-                alt={article.title}
-                fill
-                className="object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-            </div>
-          )}
-          <span className="byline">{article.author}</span>
-          <h2 className="headline text-3xl md:text-4xl mt-2 mb-4 group-hover:text-[var(--accent)] transition-colors">
-            {article.title}
-          </h2>
-          <p className="text-[var(--muted)] leading-relaxed text-lg">
-            {article.excerpt}
-          </p>
-          <div className="flex items-center gap-3 text-xs text-[var(--muted)] mt-4">
-            <time>{formattedDate}</time>
-            <span className="w-1 h-1 rounded-full bg-[var(--border)]" />
-            <span>{article.readTime}</span>
-          </div>
-        </Link>
-      </article>
-    );
-  }
-
   return (
-    <article className="group">
-      <Link href={`/writeups/${article.id}`} className="block">
+    <motion.article
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{
+        duration: 0.5,
+        delay: index * 0.08,
+        ease: 'easeOut',
+      }}
+      whileHover={{ x: -4 }}
+      className={`group bg-white border-b border-[var(--border)] pb-6 ${featured ? 'border-l-4 border-l-[var(--accent)] pl-6' : ''}`}
+    >
+      <Link href={`/writeups/${article.id}`} className="flex gap-6 items-stretch">
+        {/* Text Content */}
+        <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <span className="byline">{article.author}</span>
+              <span className="w-1 h-1 rounded-full bg-[var(--accent)]" />
+              <time className="text-xs text-[var(--muted)]">{formattedDate}</time>
+            </div>
+            <h3 className={`headline mb-3 group-hover:text-[var(--accent)] transition-colors ${featured ? 'text-2xl md:text-3xl' : 'text-xl md:text-2xl'}`}>
+              {article.title}
+            </h3>
+            <p className="text-[var(--muted)] leading-relaxed line-clamp-2 text-sm">
+              {article.excerpt}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-[var(--muted)] mt-3">
+            <span>{article.readTime}</span>
+            <span className="text-[var(--accent)]">→</span>
+            <span className="text-[var(--accent)] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+              Read story
+            </span>
+          </div>
+        </div>
+
+        {/* Thumbnail - stretches to match text content height */}
         {article.imageUrl && (
-          <div className="aspect-[4/3] relative overflow-hidden mb-4">
-            <Image
+          <div className={`relative overflow-hidden rounded-lg flex-shrink-0 shadow-sm group-hover:shadow-lg transition-shadow duration-300 ${featured ? 'w-48' : 'w-36'}`}>
+            <motion.img
               src={article.imageUrl}
               alt={article.title}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform duration-500"
+              className="absolute inset-0 w-full h-full object-cover"
+              whileHover={{ scale: 1.1 }}
+              transition={{ duration: 0.4, ease: 'easeOut' }}
             />
           </div>
         )}
-        <span className="byline">{article.author}</span>
-        <h3 className="headline text-xl md:text-2xl mt-2 mb-3 group-hover:text-[var(--accent)] transition-colors">
-          {article.title}
-        </h3>
-        <p className="text-[var(--muted)] leading-relaxed line-clamp-3 text-sm">
-          {article.excerpt}
-        </p>
       </Link>
-    </article>
+    </motion.article>
   );
 }

@@ -1,12 +1,10 @@
-import { Timestamp } from 'firebase/firestore';
-
 export interface Article {
   id: string;
   title: string;
   excerpt: string;
   content: string;
   author: string;
-  date: Timestamp;
+  date: { seconds: number; nanoseconds: number } | null;
   readTime: string;
   type: 'writeup' | 'infographic';
   imageUrl: string;

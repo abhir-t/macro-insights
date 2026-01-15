@@ -20,10 +20,10 @@ export default function Navigation() {
             key={tab.href}
             href={tab.href}
             className={`
-              text-sm font-medium transition-colors
+              text-lg md:text-xl font-medium transition-colors nav-hover
               ${isActive
-                ? 'text-[var(--accent)]'
-                : 'text-[var(--muted)] hover:text-[var(--foreground)]'
+                ? 'text-white'
+                : 'text-white/70 hover:text-white'
               }
             `}
           >
@@ -31,12 +31,14 @@ export default function Navigation() {
           </Link>
         );
       })}
-      <Link
-        href="/admin"
-        className="btn-outline text-sm px-4 py-2 rounded-none"
+      <a
+        href="https://buymeacoffee.com/macroinsights"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="ml-8 px-6 py-2.5 bg-[var(--accent)] text-white text-sm font-semibold uppercase tracking-wider hover:bg-[var(--accent-hover)] hover:scale-105 active:scale-95 transition-all duration-200 rounded shadow-lg shadow-red-500/30"
       >
-        Sign In
-      </Link>
+        Donate
+      </a>
     </nav>
   );
 }

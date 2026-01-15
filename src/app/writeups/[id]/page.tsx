@@ -28,11 +28,11 @@ export async function generateMetadata({ params }: ArticlePageProps) {
       return { title: 'Article Not Found' };
     }
     return {
-      title: `${article.title} | Macro Insights`,
+      title: `${article.title} | Vantage Post`,
       description: article.excerpt,
     };
   } catch {
-    return { title: 'Macro Insights' };
+    return { title: 'Vantage Post' };
   }
 }
 

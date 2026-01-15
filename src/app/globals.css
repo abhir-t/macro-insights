@@ -1,12 +1,12 @@
 @import "tailwindcss";
 
 :root {
-  --background: #faf9f7;
-  --foreground: #1a1a1a;
-  --accent: #f05545;
-  --accent-hover: #d94535;
-  --dark: #2d2319;
-  --muted: #6b6b6b;
+  --background: #ffffff;
+  --foreground: #000000;
+  --accent: #e11d24;
+  --accent-hover: #b91c1c;
+  --dark: #0a0a0a;
+  --muted: #525252;
   --border: #e5e5e5;
 }
 
@@ -19,6 +19,12 @@
   --color-border: var(--border);
   --font-serif: var(--font-playfair);
   --font-sans: var(--font-inter);
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--background);
 }
 
 body {
@@ -118,22 +124,58 @@ body {
 }
 
 /* Prose styling for markdown content */
-.prose h1, .prose h2, .prose h3 {
+.prose h1, .prose h2, .prose h3, .prose h4 {
   font-family: var(--font-serif), Georgia, serif;
   font-weight: 700;
   font-style: italic;
-  margin-top: 2rem;
-  margin-bottom: 1rem;
+  margin-top: 3rem;
+  margin-bottom: 1.5rem;
+  color: var(--foreground);
+  position: relative;
+  padding-left: 1rem;
+}
+
+.prose h1::before, .prose h2::before, .prose h3::before, .prose h4::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--accent);
 }
 
 .prose h1 { font-size: 2.25rem; }
 .prose h2 { font-size: 1.875rem; }
 .prose h3 { font-size: 1.5rem; }
+.prose h4 { font-size: 1.25rem; }
 
 .prose p {
-  margin-bottom: 1.5rem;
-  line-height: 1.8;
-  color: var(--muted);
+  margin-bottom: 1.75rem;
+  line-height: 1.9;
+  color: var(--foreground);
+  font-size: 1.125rem;
+}
+
+.prose strong {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.prose ul, .prose ol {
+  margin: 1.5rem 0;
+  padding-left: 1.5rem;
+  color: var(--foreground);
+}
+
+.prose li {
+  margin-bottom: 0.75rem;
+  line-height: 1.7;
+  font-size: 1.1rem;
+}
+
+.prose li::marker {
+  color: var(--accent);
 }
 
 .prose blockquote {
@@ -162,6 +204,28 @@ body {
   opacity: 0.8;
 }
 
+/* Animated underline hover */
+.nav-hover {
+  position: relative;
+  display: inline-block;
+}
+
+.nav-hover::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: var(--accent);
+  transition: all 0.3s ease-out;
+  transform: translateX(-50%);
+}
+
+.nav-hover:hover::after {
+  width: 100%;
+}
+
 /* Sticky footer */
 .sticky-footer {
   position: fixed;
@@ -171,4 +235,13 @@ body {
   background: var(--dark);
   color: white;
   z-index: 50;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Dark background spacer for sticky footer */
+body::after {
+  content: '';
+  display: block;
+  height: 60px;
+  background: var(--dark);
 }

@@ -4,6 +4,8 @@ import {
   getDocs,
   getDoc,
   addDoc,
+  deleteDoc,
+  updateDoc,
   query,
   where,
   orderBy,
@@ -27,10 +29,15 @@ export async function getArticles(type?: 'writeup' | 'infographic'): Promise<Art
     : query(articlesRef, orderBy('date', 'desc'));
 
   const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  })) as Article[];
+  return snapshot.docs.map((doc) => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      ...data,
+      // Convert Timestamp to serializable format
+      date: data.date ? { seconds: data.date.seconds, nanoseconds: data.date.nanoseconds } : null,
+    };
+  }) as Article[];
 }
 
 export async function getArticleById(id: string): Promise<Article | null> {
@@ -45,7 +52,13 @@ export async function getArticleById(id: string): Promise<Article | null> {
     return null;
   }
 
-  return { id: snapshot.id, ...snapshot.data() } as Article;
+  const data = snapshot.data();
+  return {
+    id: snapshot.id,
+    ...data,
+    // Convert Timestamp to serializable format
+    date: data.date ? { seconds: data.date.seconds, nanoseconds: data.date.nanoseconds } : null,
+  } as Article;
 }
 
 export async function addArticle(article: Omit<Article, 'id'>): Promise<string> {
@@ -71,4 +84,22 @@ export async function addSubscriber(email: string): Promise<void> {
     email,
     subscribedAt: Timestamp.now(),
   } as Subscriber);
+}
+
+export async function deleteArticle(id: string): Promise<void> {
+  if (!isConfigured || !db) {
+    throw new Error('Firebase is not configured');
+  }
+
+  const docRef = doc(db, ARTICLES_PATH, id);
+  await deleteDoc(docRef);
+}
+
+export async function updateArticle(id: string, data: Partial<Omit<Article, 'id'>>): Promise<void> {
+  if (!isConfigured || !db) {
+    throw new Error('Firebase is not configured');
+  }
+
+  const docRef = doc(db, ARTICLES_PATH, id);
+  await updateDoc(docRef, data);
 }

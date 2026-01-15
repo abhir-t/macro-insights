@@ -1,46 +1,122 @@
 'use client';
 
-import { useState } from 'react';
-import { addArticle } from '@/lib/firestore';
-import { Timestamp } from 'firebase/firestore';
+import { useState, useEffect } from 'react';
+import { addArticle, getArticles, deleteArticle, updateArticle } from '@/lib/firestore';
+import { Article } from '@/types';
 
 export default function AdminForm() {
   const [formData, setFormData] = useState({
     title: '',
     excerpt: '',
     content: '',
-    author: '',
-    readTime: '',
+    author: 'Vantage Post',
     type: 'writeup' as 'writeup' | 'infographic',
     imageUrl: '',
   });
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [loadingArticles, setLoadingArticles] = useState(true);
+
+  const calculateReadTime = (content: string): string => {
+    const wordsPerMinute = 200;
+    const wordCount = content.trim().split(/\s+/).length;
+    const minutes = Math.ceil(wordCount / wordsPerMinute);
+    return `${minutes} min read`;
+  };
+
+  const fetchArticles = async () => {
+    try {
+      const allArticles = await getArticles();
+      setArticles(allArticles);
+    } catch (error) {
+      console.error('Error fetching articles:', error);
+    } finally {
+      setLoadingArticles(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchArticles();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus('loading');
 
     try {
-      await addArticle({
-        ...formData,
-        date: Timestamp.now(),
-      });
+      if (editingId) {
+        await updateArticle(editingId, {
+          ...formData,
+          readTime: calculateReadTime(formData.content),
+        });
+        setMessage('Article updated successfully!');
+        setEditingId(null);
+      } else {
+        await addArticle({
+          ...formData,
+          readTime: calculateReadTime(formData.content),
+        });
+        setMessage('Article published successfully!');
+      }
       setStatus('success');
-      setMessage('Article published successfully.');
       setFormData({
         title: '',
         excerpt: '',
         content: '',
-        author: '',
-        readTime: '',
+        author: 'Vantage Post',
         type: 'writeup',
         imageUrl: '',
       });
+      fetchArticles();
     } catch (error) {
-      console.error('Error publishing article:', error);
+      console.error('Error saving article:', error);
       setStatus('error');
-      setMessage('Failed to publish article.');
+      setMessage('Failed to save article.');
+    }
+  };
+
+  const handleEdit = (article: Article) => {
+    setEditingId(article.id);
+    setFormData({
+      title: article.title,
+      excerpt: article.excerpt,
+      content: article.content,
+      author: article.author,
+      type: article.type,
+      imageUrl: article.imageUrl || '',
+    });
+    setMessage('');
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setFormData({
+      title: '',
+      excerpt: '',
+      content: '',
+      author: 'Vantage Post',
+      type: 'writeup',
+      imageUrl: '',
+    });
+    setMessage('');
+  };
+
+  const handleDelete = async (id: string, title: string) => {
+    if (!confirm(`Delete "${title}"?`)) return;
+
+    try {
+      await deleteArticle(id);
+      setArticles(articles.filter(a => a.id !== id));
+      setMessage('Article deleted.');
+      if (editingId === id) {
+        handleCancelEdit();
+      }
+    } catch (error) {
+      console.error('Error deleting article:', error);
+      setMessage('Failed to delete article.');
     }
   };
 
@@ -52,129 +128,179 @@ export default function AdminForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="space-y-12">
+      {/* Existing Articles */}
       <div>
-        <label htmlFor="type" className="block text-sm font-medium mb-2">
-          Type
-        </label>
-        <select
-          id="type"
-          name="type"
-          value={formData.type}
-          onChange={handleChange}
-          className="w-full px-4 py-3 border border-hairline bg-white text-sm focus:outline-none focus:border-black"
-        >
-          <option value="writeup">Writeup</option>
-          <option value="infographic">Infographic</option>
-        </select>
+        <h2 className="text-xl font-semibold mb-4">Existing Articles</h2>
+        {loadingArticles ? (
+          <p className="text-slate-500">Loading...</p>
+        ) : articles.length === 0 ? (
+          <p className="text-slate-500">No articles yet.</p>
+        ) : (
+          <div className="space-y-2">
+            {articles.map((article) => (
+              <div
+                key={article.id}
+                className={`flex items-center justify-between p-4 border bg-white ${
+                  editingId === article.id ? 'border-[var(--accent)] bg-red-50' : 'border-[var(--border)]'
+                }`}
+              >
+                <div>
+                  <p className="font-medium">{article.title}</p>
+                  <p className="text-sm text-slate-500">{article.type} • {article.readTime}</p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleEdit(article)}
+                    className="px-3 py-1 text-sm text-[var(--accent)] hover:bg-red-50 transition-colors border border-[var(--accent)]"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(article.id, article.title)}
+                    className="px-3 py-1 text-sm text-white bg-red-600 hover:bg-red-700 transition-colors"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
+      {/* Publish / Edit Article */}
       <div>
-        <label htmlFor="title" className="block text-sm font-medium mb-2">
-          Title
-        </label>
-        <input
-          type="text"
-          id="title"
-          name="title"
-          value={formData.title}
-          onChange={handleChange}
-          required
-          className="w-full px-4 py-3 border border-hairline bg-white text-sm focus:outline-none focus:border-black"
-        />
-      </div>
-
-      <div>
-        <label htmlFor="excerpt" className="block text-sm font-medium mb-2">
-          Excerpt
-        </label>
-        <textarea
-          id="excerpt"
-          name="excerpt"
-          value={formData.excerpt}
-          onChange={handleChange}
-          required
-          rows={2}
-          className="w-full px-4 py-3 border border-hairline bg-white text-sm focus:outline-none focus:border-black resize-none"
-        />
-      </div>
-
-      <div>
-        <label htmlFor="content" className="block text-sm font-medium mb-2">
-          Content (Markdown)
-        </label>
-        <textarea
-          id="content"
-          name="content"
-          value={formData.content}
-          onChange={handleChange}
-          required
-          rows={12}
-          className="w-full px-4 py-3 border border-hairline bg-white text-sm font-mono focus:outline-none focus:border-black resize-none"
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="author" className="block text-sm font-medium mb-2">
-            Author
-          </label>
-          <input
-            type="text"
-            id="author"
-            name="author"
-            value={formData.author}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-3 border border-hairline bg-white text-sm focus:outline-none focus:border-black"
-          />
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold">
+            {editingId ? 'Edit Article' : 'Publish New Article'}
+          </h2>
+          {editingId && (
+            <button
+              onClick={handleCancelEdit}
+              className="text-sm text-slate-500 hover:text-slate-700"
+            >
+              Cancel Edit
+            </button>
+          )}
         </div>
 
-        <div>
-          <label htmlFor="readTime" className="block text-sm font-medium mb-2">
-            Read Time
-          </label>
-          <input
-            type="text"
-            id="readTime"
-            name="readTime"
-            value={formData.readTime}
-            onChange={handleChange}
-            required
-            placeholder="5 min read"
-            className="w-full px-4 py-3 border border-hairline bg-white text-sm focus:outline-none focus:border-black"
-          />
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label htmlFor="type" className="block text-sm font-medium mb-2">
+              Type
+            </label>
+            <select
+              id="type"
+              name="type"
+              value={formData.type}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-[var(--border)] bg-white text-sm focus:outline-none focus:border-[var(--accent)]"
+            >
+              <option value="writeup">Story</option>
+              <option value="infographic">Infographic</option>
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="title" className="block text-sm font-medium mb-2">
+              Title
+            </label>
+            <input
+              type="text"
+              id="title"
+              name="title"
+              value={formData.title}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-3 border border-[var(--border)] bg-white text-sm focus:outline-none focus:border-[var(--accent)]"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="excerpt" className="block text-sm font-medium mb-2">
+              Excerpt (short summary for the card)
+            </label>
+            <textarea
+              id="excerpt"
+              name="excerpt"
+              value={formData.excerpt}
+              onChange={handleChange}
+              required
+              rows={2}
+              className="w-full px-4 py-3 border border-[var(--border)] bg-white text-sm focus:outline-none focus:border-[var(--accent)] resize-none"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="content" className="block text-sm font-medium mb-2">
+              Content (Markdown + HTML for charts)
+            </label>
+            <div className="text-xs text-slate-500 mb-2 space-y-1">
+              <p><code className="bg-slate-100 px-1">## Heading</code> → Section heading with red accent</p>
+              <p><code className="bg-slate-100 px-1">**bold text**</code> → Red highlighted text</p>
+              <p><code className="bg-slate-100 px-1">- item</code> → Bullet list</p>
+            </div>
+            <textarea
+              id="content"
+              name="content"
+              value={formData.content}
+              onChange={handleChange}
+              required
+              rows={20}
+              placeholder="## Introduction&#10;&#10;Your content here with **bold text** for emphasis...&#10;&#10;## Next Section&#10;&#10;<iframe src='chart-url' width='100%' height='400'></iframe>"
+              className="w-full px-4 py-3 border border-[var(--border)] bg-white text-sm font-mono focus:outline-none focus:border-[var(--accent)] resize-none"
+            />
+            <p className="text-xs text-slate-500 mt-1">
+              Estimated read time: {calculateReadTime(formData.content)}
+            </p>
+          </div>
+
+          <div>
+            <label htmlFor="author" className="block text-sm font-medium mb-2">
+              Author
+            </label>
+            <input
+              type="text"
+              id="author"
+              name="author"
+              value={formData.author}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-3 border border-[var(--border)] bg-white text-sm focus:outline-none focus:border-[var(--accent)]"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="imageUrl" className="block text-sm font-medium mb-2">
+              Cover Image URL (thumbnail)
+            </label>
+            <input
+              type="url"
+              id="imageUrl"
+              name="imageUrl"
+              value={formData.imageUrl}
+              onChange={handleChange}
+              placeholder="https://images.unsplash.com/..."
+              className="w-full px-4 py-3 border border-[var(--border)] bg-white text-sm focus:outline-none focus:border-[var(--accent)]"
+            />
+          </div>
+
+          {message && (
+            <p className={`text-sm ${status === 'error' ? 'text-red-600' : 'text-green-600'}`}>
+              {message}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={status === 'loading'}
+            className="w-full px-6 py-3 bg-[var(--accent)] text-white text-sm uppercase tracking-widest hover:bg-[var(--accent-hover)] transition-colors disabled:opacity-50"
+          >
+            {status === 'loading' ? 'Saving...' : editingId ? 'Update Article' : 'Publish Article'}
+          </button>
+        </form>
       </div>
-
-      <div>
-        <label htmlFor="imageUrl" className="block text-sm font-medium mb-2">
-          Image URL
-        </label>
-        <input
-          type="url"
-          id="imageUrl"
-          name="imageUrl"
-          value={formData.imageUrl}
-          onChange={handleChange}
-          placeholder="https://..."
-          className="w-full px-4 py-3 border border-hairline bg-white text-sm focus:outline-none focus:border-black"
-        />
-      </div>
-
-      {message && (
-        <p className={`text-sm ${status === 'error' ? 'text-red-600' : 'text-green-600'}`}>
-          {message}
-        </p>
-      )}
-
-      <button
-        type="submit"
-        disabled={status === 'loading'}
-        className="w-full px-6 py-3 bg-black text-white text-sm uppercase tracking-widest hover:bg-slate-800 transition-colors disabled:opacity-50"
-      >
-        {status === 'loading' ? 'Publishing...' : 'Publish Article'}
-      </button>
-    </form>
+    </div>
   );
 }
