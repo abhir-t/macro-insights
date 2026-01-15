@@ -18,6 +18,7 @@ export default function AdminForm() {
   const [message, setMessage] = useState('');
   const [articles, setArticles] = useState<Article[]>([]);
   const [loadingArticles, setLoadingArticles] = useState(true);
+  const [sendToSubscribers, setSendToSubscribers] = useState(false);
 
   const calculateReadTime = (content: string): string => {
     const wordsPerMinute = 200;
@@ -64,6 +65,30 @@ export default function AdminForm() {
         setMessage('Article published successfully!');
       }
 
+      // Send newsletter if checkbox is checked (only for new articles)
+      if (sendToSubscribers && !editingId) {
+        try {
+          const baseUrl = window.location.origin;
+          const res = await fetch('/api/send-newsletter', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              title: formData.title,
+              excerpt: formData.excerpt,
+              articleUrl: `${baseUrl}/writeups/${articleId}`,
+            }),
+          });
+          if (res.ok) {
+            setMessage('Article published and sent to subscribers!');
+          } else {
+            setMessage('Article published, but failed to send newsletter.');
+          }
+        } catch (emailError) {
+          console.error('Failed to send newsletter:', emailError);
+          setMessage('Article published, but failed to send newsletter.');
+        }
+      }
+
       setStatus('success');
       setFormData({
         title: '',
@@ -73,6 +98,7 @@ export default function AdminForm() {
         type: 'writeup',
         imageUrl: '',
       });
+      setSendToSubscribers(false);
       fetchArticles();
     } catch (error) {
       console.error('Error saving article:', error);
@@ -290,6 +316,23 @@ export default function AdminForm() {
             />
           </div>
 
+          {/* Send to subscribers checkbox - only show for new articles */}
+          {!editingId && (
+            <div className="flex items-center gap-3 p-4 bg-slate-50 border border-slate-200">
+              <input
+                type="checkbox"
+                id="sendToSubscribers"
+                checked={sendToSubscribers}
+                onChange={(e) => setSendToSubscribers(e.target.checked)}
+                className="w-5 h-5 accent-[var(--accent)]"
+              />
+              <label htmlFor="sendToSubscribers" className="text-sm">
+                <span className="font-medium">Send to all subscribers</span>
+                <span className="text-slate-500 block text-xs">Email this article to everyone who subscribed</span>
+              </label>
+            </div>
+          )}
+
           {message && (
             <p className={`text-sm ${status === 'error' ? 'text-red-600' : 'text-green-600'}`}>
               {message}
@@ -301,7 +344,7 @@ export default function AdminForm() {
             disabled={status === 'loading'}
             className="w-full px-6 py-3 bg-[var(--accent)] text-white text-sm uppercase tracking-widest hover:bg-[var(--accent-hover)] transition-colors disabled:opacity-50"
           >
-            {status === 'loading' ? 'Saving...' : editingId ? 'Update Article' : 'Publish Article'}
+            {status === 'loading' ? 'Saving...' : editingId ? 'Update Article' : sendToSubscribers ? 'Publish & Send' : 'Publish Article'}
           </button>
         </form>
       </div>

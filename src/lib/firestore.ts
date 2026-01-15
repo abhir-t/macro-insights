@@ -103,3 +103,13 @@ export async function updateArticle(id: string, data: Partial<Omit<Article, 'id'
   const docRef = doc(db, ARTICLES_PATH, id);
   await updateDoc(docRef, data);
 }
+
+export async function getSubscribers(): Promise<string[]> {
+  if (!isConfigured || !db) {
+    return [];
+  }
+
+  const subscribersRef = collection(db, SUBSCRIBERS_PATH);
+  const snapshot = await getDocs(subscribersRef);
+  return snapshot.docs.map((doc) => doc.data().email);
+}
