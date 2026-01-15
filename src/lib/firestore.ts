@@ -113,3 +113,55 @@ export async function getSubscribers(): Promise<string[]> {
   const snapshot = await getDocs(subscribersRef);
   return snapshot.docs.map((doc) => doc.data().email);
 }
+
+const CONTACTS_PATH = `artifacts/${APP_ID}/public/data/contacts`;
+
+export async function addContact(data: { name: string; email: string; message: string }): Promise<void> {
+  if (!isConfigured || !db) {
+    throw new Error('Firebase is not configured');
+  }
+
+  const contactsRef = collection(db, CONTACTS_PATH);
+  await addDoc(contactsRef, {
+    ...data,
+    createdAt: Timestamp.now(),
+  });
+}
+
+export async function getContacts(): Promise<{ id: string; name: string; email: string; message: string; createdAt: { seconds: number } }[]> {
+  if (!isConfigured || !db) {
+    return [];
+  }
+
+  const contactsRef = collection(db, CONTACTS_PATH);
+  const q = query(contactsRef, orderBy('createdAt', 'desc'));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((doc) => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      name: data.name,
+      email: data.email,
+      message: data.message,
+      createdAt: data.createdAt,
+    };
+  });
+}
+
+export async function getSubscribersList(): Promise<{ id: string; email: string; subscribedAt: { seconds: number } }[]> {
+  if (!isConfigured || !db) {
+    return [];
+  }
+
+  const subscribersRef = collection(db, SUBSCRIBERS_PATH);
+  const q = query(subscribersRef, orderBy('subscribedAt', 'desc'));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((doc) => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      email: data.email,
+      subscribedAt: data.subscribedAt,
+    };
+  });
+}

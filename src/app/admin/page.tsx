@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import AdminForm from '@/components/AdminForm';
+import AdminData from '@/components/AdminData';
 
 const ADMIN_PASSWORD = 'vantage2024'; // Change this to your desired password
 
@@ -49,7 +50,15 @@ export default function AdminPage() {
   return (
     <div className="max-w-2xl mx-auto px-6 py-12">
       <h1 className="font-serif text-3xl font-bold mb-2">Admin</h1>
-      <p className="text-slate-600 mb-8">Publish new content to the newsletter.</p>
+      <p className="text-slate-600 mb-8">Manage your newsletter.</p>
+
+      {/* Subscribers & Contacts */}
+      <div className="mb-12">
+        <h2 className="text-xl font-semibold mb-4">Subscribers & Messages</h2>
+        <AdminData />
+      </div>
+
+      {/* Article Management */}
       <AdminForm />
     </div>
   );
