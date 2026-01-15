@@ -32,11 +32,11 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${playfair.variable} ${inter.variable} antialiased`}>
         <div className="min-h-screen flex flex-col">
-          <header className="bg-[var(--dark)]">
-            <div className="max-w-[1400px] mx-auto px-8 lg:px-16 py-5 flex items-center justify-between">
+          <header className="bg-[var(--dark)] relative z-50">
+            <div className="max-w-[1400px] mx-auto px-4 md:px-8 lg:px-16 py-4 md:py-5 flex items-center justify-between">
               <a href="/" className="flex items-center">
                 <span
-                  className="text-4xl md:text-5xl font-bold italic leading-none"
+                  className="text-2xl md:text-4xl lg:text-5xl font-bold italic leading-none"
                   style={{ fontFamily: 'var(--font-playfair), Georgia, serif', marginTop: '-4px' }}
                 >
                   <span className="text-white">vantage</span>

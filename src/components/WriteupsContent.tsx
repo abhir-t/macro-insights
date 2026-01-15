@@ -11,28 +11,28 @@ interface WriteupsContentProps {
 
 export default function WriteupsContent({ articles }: WriteupsContentProps) {
   return (
-    <div className="flex min-h-[calc(100vh-200px)]">
-      {/* Left Side - Fixed */}
+    <div className="flex flex-col lg:flex-row lg:min-h-[calc(100vh-200px)]">
+      {/* Left Side - Fixed on desktop */}
       <motion.div
         initial={{ opacity: 0, x: -30 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6 }}
-        className="w-full lg:w-2/5 lg:sticky lg:top-0 lg:h-[calc(100vh-200px)] flex flex-col justify-center pr-8 lg:pr-16 pb-8 lg:pb-0"
+        className="w-full lg:w-2/5 lg:sticky lg:top-0 lg:h-[calc(100vh-200px)] flex flex-col justify-center pr-0 lg:pr-16 pb-8 lg:pb-0"
       >
         <motion.div
           initial={{ width: 0 }}
-          animate={{ width: '80px' }}
+          animate={{ width: '60px' }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="h-1 bg-[var(--accent)] mb-8"
+          className="h-1 bg-[var(--accent)] mb-6 lg:mb-8"
         />
-        <h1 className="headline text-4xl md:text-5xl lg:text-6xl mb-6">
+        <h1 className="headline text-3xl sm:text-4xl md:text-5xl lg:text-6xl mb-4 lg:mb-6">
           Stories &{' '}
           <RotatingText
             texts={['Insights', 'Analysis', 'Reports', 'Deep Dives']}
             className="text-[var(--accent)]"
           />
         </h1>
-        <p className="text-[var(--muted)] text-lg lg:text-xl max-w-md leading-relaxed mb-8">
+        <p className="text-[var(--muted)] text-base lg:text-xl max-w-md leading-relaxed mb-6 lg:mb-8">
           Deep dives into business, finance, and the forces shaping markets.
         </p>
         <motion.div

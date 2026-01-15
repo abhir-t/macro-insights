@@ -121,19 +121,18 @@ export default function StickySignup() {
                 <polyline points="6 9 12 15 18 9"></polyline>
               </svg>
             </button>
-            <div className="max-w-7xl mx-auto px-6 py-6 pr-12">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 pr-10 sm:pr-12">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
                 <div className="flex-1">
-                  <h3 className="text-white text-xl md:text-2xl font-serif font-bold mb-2">
-                    Sign up for free access to Vantage Post
+                  <h3 className="text-white text-lg sm:text-xl md:text-2xl font-serif font-bold mb-1 sm:mb-2">
+                    Sign up for free access
                   </h3>
-                  <p className="text-white/70 text-sm">
-                    Get access to exclusive stories, market analysis, and expert insights.
-                    Sign up with just your email address.
+                  <p className="text-white/70 text-xs sm:text-sm hidden sm:block">
+                    Get exclusive stories, market analysis, and expert insights.
                   </p>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
                   <AnimatePresence mode="wait">
                     {status === 'success' ? (
                       <motion.p
@@ -157,7 +156,7 @@ export default function StickySignup() {
                       <form
                         key="form"
                         onSubmit={handleSubmit}
-                        className="flex flex-col sm:flex-row gap-3"
+                        className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto"
                       >
                         <input
                           type="email"
@@ -165,7 +164,7 @@ export default function StickySignup() {
                           onChange={(e) => setEmail(e.target.value)}
                           placeholder="Enter your email"
                           required
-                          className="px-4 py-3 bg-white/10 border border-white/20 text-white placeholder-white/50 text-sm focus:outline-none focus:border-[var(--accent)] min-w-[250px]"
+                          className="w-full sm:w-auto px-4 py-3 bg-white/10 border border-white/20 text-white placeholder-white/50 text-sm focus:outline-none focus:border-[var(--accent)] sm:min-w-[220px]"
                         />
                         <motion.button
                           type="submit"

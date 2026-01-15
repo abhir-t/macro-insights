@@ -31,16 +31,29 @@ export default function ArticleCard({ article, featured = false, index = 0 }: Ar
       whileHover={{ x: -4 }}
       className={`group bg-white border-b border-[var(--border)] pb-6 ${featured ? 'border-l-4 border-l-[var(--accent)] pl-6' : ''}`}
     >
-      <Link href={`/writeups/${article.id}`} className="flex gap-6 items-stretch">
+      <Link href={`/writeups/${article.id}`} className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-stretch">
+        {/* Thumbnail - on top for mobile, right side for desktop */}
+        {article.imageUrl && (
+          <div className={`relative overflow-hidden rounded-lg flex-shrink-0 shadow-sm group-hover:shadow-lg transition-shadow duration-300 h-40 sm:h-auto ${featured ? 'sm:w-48' : 'sm:w-32'}`}>
+            <motion.img
+              src={article.imageUrl}
+              alt={article.title}
+              className="absolute inset-0 w-full h-full object-cover"
+              whileHover={{ scale: 1.1 }}
+              transition={{ duration: 0.4, ease: 'easeOut' }}
+            />
+          </div>
+        )}
+
         {/* Text Content */}
         <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
           <div>
-            <div className="flex items-center gap-3 mb-2">
-              <span className="byline">{article.author}</span>
+            <div className="flex items-center gap-2 sm:gap-3 mb-2 flex-wrap">
+              <span className="byline text-xs sm:text-sm">{article.author}</span>
               <span className="w-1 h-1 rounded-full bg-[var(--accent)]" />
               <time className="text-xs text-[var(--muted)]">{formattedDate}</time>
             </div>
-            <h3 className={`headline mb-3 group-hover:text-[var(--accent)] transition-colors ${featured ? 'text-2xl md:text-3xl' : 'text-xl md:text-2xl'}`}>
+            <h3 className={`headline mb-2 sm:mb-3 group-hover:text-[var(--accent)] transition-colors ${featured ? 'text-xl sm:text-2xl md:text-3xl' : 'text-lg sm:text-xl md:text-2xl'}`}>
               {article.title}
             </h3>
             <p className="text-[var(--muted)] leading-relaxed line-clamp-2 text-sm">
@@ -55,19 +68,6 @@ export default function ArticleCard({ article, featured = false, index = 0 }: Ar
             </span>
           </div>
         </div>
-
-        {/* Thumbnail - stretches to match text content height */}
-        {article.imageUrl && (
-          <div className={`relative overflow-hidden rounded-lg flex-shrink-0 shadow-sm group-hover:shadow-lg transition-shadow duration-300 ${featured ? 'w-48' : 'w-36'}`}>
-            <motion.img
-              src={article.imageUrl}
-              alt={article.title}
-              className="absolute inset-0 w-full h-full object-cover"
-              whileHover={{ scale: 1.1 }}
-              transition={{ duration: 0.4, ease: 'easeOut' }}
-            />
-          </div>
-        )}
       </Link>
     </motion.article>
   );
