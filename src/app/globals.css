@@ -28,24 +28,24 @@ html, body {
   overflow-x: hidden;
 }
 
-/* Text size utilities for article content */
-.text-xs { font-size: 0.75rem; line-height: 1.5; }
-.text-sm { font-size: 0.875rem; line-height: 1.6; }
-.text-base { font-size: 1rem; line-height: 1.7; }
-.text-lg { font-size: 1.125rem; line-height: 1.8; }
-.text-xl { font-size: 1.25rem; line-height: 1.8; }
-.text-2xl { font-size: 1.5rem; line-height: 1.6; }
+/* Text size utilities for article content - scoped to .prose */
+.prose .size-xs { font-size: 0.75rem; line-height: 1.5; }
+.prose .size-sm { font-size: 0.875rem; line-height: 1.6; }
+.prose .size-base { font-size: 1rem; line-height: 1.7; }
+.prose .size-lg { font-size: 1.125rem; line-height: 1.8; }
+.prose .size-xl { font-size: 1.25rem; line-height: 1.8; }
+.prose .size-2xl { font-size: 1.5rem; line-height: 1.6; }
 
-/* Line spacing utilities */
-.leading-tight { line-height: 1.25; }
-.leading-snug { line-height: 1.375; }
-.leading-normal { line-height: 1.5; }
-.leading-relaxed { line-height: 1.75; }
-.leading-loose { line-height: 2; }
+/* Line spacing utilities - scoped to .prose */
+.prose .spacing-tight { line-height: 1.25; }
+.prose .spacing-snug { line-height: 1.375; }
+.prose .spacing-normal { line-height: 1.5; }
+.prose .spacing-relaxed { line-height: 1.75; }
+.prose .spacing-loose { line-height: 2; }
 
 /* Text color utilities */
-.text-muted { color: var(--muted); }
-.text-accent { color: var(--accent); }
+.prose .muted { color: var(--muted); }
+.prose .accent { color: var(--accent); }
 
 /* Special section styles */
 .sources {

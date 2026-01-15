@@ -313,21 +313,21 @@ export default function AdminForm() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => insertFormat('<span class="text-sm">', '</span>')}
+                  onClick={() => insertFormat('<span class="size-sm">', '</span>')}
                   className="px-2 py-1 text-xs bg-white border border-slate-300 rounded hover:bg-slate-100"
                 >
                   Small Text
                 </button>
                 <button
                   type="button"
-                  onClick={() => insertFormat('<span class="text-lg">', '</span>')}
+                  onClick={() => insertFormat('<span class="size-lg">', '</span>')}
                   className="px-2 py-1 text-xs bg-white border border-slate-300 rounded hover:bg-slate-100"
                 >
                   Large Text
                 </button>
                 <button
                   type="button"
-                  onClick={() => insertFormat('<span class="text-muted">', '</span>')}
+                  onClick={() => insertFormat('<span class="muted">', '</span>')}
                   className="px-2 py-1 text-xs bg-white border border-slate-300 rounded hover:bg-slate-100"
                 >
                   Gray Text
