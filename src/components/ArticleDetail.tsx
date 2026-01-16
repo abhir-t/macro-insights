@@ -215,7 +215,11 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
     const rect = e.currentTarget.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
     const percentage = (clickX / rect.width) * 100;
-    const clampedPercent = Math.min(Math.max(percentage, 0), 100);
+    handleSeekToPercent(Math.min(Math.max(percentage, 0), 100));
+  };
+
+  // Core seek function that works with both click and touch
+  const handleSeekToPercent = (clampedPercent: number) => {
 
     // Stop current speech
     cleanup();
@@ -394,20 +398,24 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
           className="mb-10 p-4 bg-[var(--dark)] border border-[var(--border)] rounded-xl"
         >
           {/* Main Player Row */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             {/* Play/Stop Button */}
             <button
               onClick={handlePlayPause}
-              className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white rounded-full transition-all hover:scale-105 shadow-lg"
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                handlePlayPause();
+              }}
+              className="w-11 h-11 sm:w-12 sm:h-12 flex-shrink-0 flex items-center justify-center bg-[var(--accent)] hover:bg-[var(--accent-hover)] active:bg-[var(--accent-hover)] text-white rounded-full transition-all active:scale-95 shadow-lg touch-manipulation"
               aria-label={isPlaying ? 'Stop' : 'Play'}
             >
               {isPlaying ? (
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                   <rect x="6" y="5" width="4" height="14" rx="1" />
                   <rect x="14" y="5" width="4" height="14" rx="1" />
                 </svg>
               ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                   <polygon points="6 3 20 12 6 21 6 3" />
                 </svg>
               )}
@@ -415,20 +423,27 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
 
             {/* Progress Section */}
             <div className="flex-1 min-w-0">
-              {/* Clickable Progress Bar */}
+              {/* Clickable Progress Bar - taller on mobile for easier tapping */}
               <div
-                className="relative w-full h-2 bg-white/10 rounded-full cursor-pointer group"
+                className="relative w-full h-3 sm:h-2 bg-white/10 rounded-full cursor-pointer group touch-manipulation"
                 onClick={handleSeek}
+                onTouchEnd={(e) => {
+                  const touch = e.changedTouches[0];
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const clickX = touch.clientX - rect.left;
+                  const percentage = (clickX / rect.width) * 100;
+                  handleSeekToPercent(Math.min(Math.max(percentage, 0), 100));
+                }}
               >
                 {/* Progress Fill */}
-                <motion.div
-                  className="absolute top-0 left-0 h-full bg-[var(--accent)] rounded-full"
+                <div
+                  className="absolute top-0 left-0 h-full bg-[var(--accent)] rounded-full transition-[width] duration-100"
                   style={{ width: `${progress}%` }}
                 />
-                {/* Hover Thumb */}
+                {/* Thumb - always visible on mobile */}
                 <div
-                  className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
-                  style={{ left: `calc(${progress}% - 6px)` }}
+                  className="absolute top-1/2 -translate-y-1/2 w-4 h-4 sm:w-3 sm:h-3 bg-white rounded-full shadow-md sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                  style={{ left: `calc(${progress}% - 8px)` }}
                 />
               </div>
               {/* Time Display */}
@@ -443,7 +458,7 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
               <select
                 value={speed}
                 onChange={(e) => handleSpeedChange(parseFloat(e.target.value))}
-                className="bg-white/10 text-white text-xs px-2 py-1.5 rounded-lg border-none outline-none cursor-pointer hover:bg-white/20 transition-colors"
+                className="bg-white/10 text-white text-xs px-2 py-1.5 rounded-lg border-none outline-none cursor-pointer hover:bg-white/20 active:bg-white/20 transition-colors touch-manipulation"
               >
                 <option value="0.75" className="bg-[var(--dark)]">0.75x</option>
                 <option value="1" className="bg-[var(--dark)]">1x</option>
