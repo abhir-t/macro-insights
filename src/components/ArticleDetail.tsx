@@ -23,10 +23,12 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
 
   // Refs for tracking without causing re-renders
   const textRef = useRef('');
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const isPlayingRef = useRef(false);
   const speedRef = useRef(1);
   const startTimeRef = useRef(0);
   const pausedAtRef = useRef(0); // Track progress when paused
+  const pausedTimeRef = useRef(0); // Track elapsed time when paused
   const durationRef = useRef(0);
   const animationFrameRef = useRef<number | null>(null);
   const chromeFixIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -117,6 +119,38 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
       .replace(/&#39;/g, "'");
   };
 
+  // Get the best available voice - prefer natural/enhanced voices
+  const getBestVoice = (): SpeechSynthesisVoice | null => {
+    const voices = window.speechSynthesis.getVoices();
+    if (voices.length === 0) return null;
+
+    // Priority list of natural-sounding voices
+    const preferredVoices = [
+      'Samantha', // Mac natural voice
+      'Karen', // Mac Australian
+      'Daniel', // Mac British
+      'Google UK English Female',
+      'Google UK English Male',
+      'Google US English',
+      'Microsoft Zira',
+      'Microsoft David',
+    ];
+
+    // Look for enhanced/premium voices first
+    for (const preferred of preferredVoices) {
+      const voice = voices.find(v =>
+        v.name.includes(preferred) ||
+        v.name.toLowerCase().includes('enhanced') ||
+        v.name.toLowerCase().includes('premium')
+      );
+      if (voice) return voice;
+    }
+
+    // Fallback to any English voice
+    const englishVoice = voices.find(v => v.lang.startsWith('en'));
+    return englishVoice || voices[0];
+  };
+
   // Initialize text on mount
   useEffect(() => {
     const cleanContent = stripHtmlAndMarkdown(article.content);
@@ -177,30 +211,41 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
     const synth = window.speechSynthesis;
 
     // If currently playing, pause it
-    if (isPlaying && !isPaused) {
+    if (isPlaying) {
       synth.pause();
       setIsPaused(true);
       setIsPlaying(false);
       isPlayingRef.current = false;
       pausedAtRef.current = progress;
+      pausedTimeRef.current = Date.now() - startTimeRef.current;
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
         animationFrameRef.current = null;
+      }
+      // Clear Chrome fix during pause
+      if (chromeFixIntervalRef.current) {
+        clearInterval(chromeFixIntervalRef.current);
+        chromeFixIntervalRef.current = null;
       }
       return;
     }
 
     // If paused, resume it
-    if (isPaused && synth.paused) {
+    if (isPaused) {
       synth.resume();
       setIsPaused(false);
       setIsPlaying(true);
       isPlayingRef.current = true;
-      // Adjust start time to account for paused duration
-      const remainingPercent = 100 - pausedAtRef.current;
-      const remainingDuration = (durationRef.current / speedRef.current) * (remainingPercent / 100);
-      startTimeRef.current = Date.now() - ((pausedAtRef.current / 100) * (durationRef.current / speedRef.current));
+      // Restore timing from where we paused
+      startTimeRef.current = Date.now() - pausedTimeRef.current;
       animationFrameRef.current = requestAnimationFrame(animateProgress);
+      // Restart Chrome fix
+      chromeFixIntervalRef.current = setInterval(() => {
+        if (synth.speaking && !synth.paused) {
+          synth.pause();
+          synth.resume();
+        }
+      }, 10000);
       return;
     }
 
@@ -212,8 +257,18 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
     utterance.rate = speed;
     speedRef.current = speed;
 
+    // Set a natural-sounding voice
+    const bestVoice = getBestVoice();
+    if (bestVoice) {
+      utterance.voice = bestVoice;
+    }
+
+    // Store reference for pause/resume
+    utteranceRef.current = utterance;
+
     utterance.onstart = () => {
       startTimeRef.current = Date.now();
+      pausedTimeRef.current = 0;
       isPlayingRef.current = true;
       setIsPlaying(true);
       setIsPaused(false);
@@ -236,6 +291,8 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
       setIsPaused(false);
       setProgress(100);
       pausedAtRef.current = 0;
+      pausedTimeRef.current = 0;
+      utteranceRef.current = null;
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
       if (chromeFixIntervalRef.current) clearInterval(chromeFixIntervalRef.current);
     };
@@ -245,6 +302,7 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
       isPlayingRef.current = false;
       setIsPlaying(false);
       setIsPaused(false);
+      utteranceRef.current = null;
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
       if (chromeFixIntervalRef.current) clearInterval(chromeFixIntervalRef.current);
     };
