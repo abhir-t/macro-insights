@@ -4,5 +4,5 @@
       @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,600&amp;display=swap');
     </style>
   </defs>
-  <text x="16" y="26" font-family="'Playfair Display', Georgia, serif" font-size="32" font-weight="600" font-style="italic" fill="#e11d24" text-anchor="middle">v</text>
+  <text x="16" y="30" font-family="'Playfair Display', Georgia, serif" font-size="42" font-weight="600" font-style="italic" fill="#e11d24" text-anchor="middle">v</text>
 </svg>
