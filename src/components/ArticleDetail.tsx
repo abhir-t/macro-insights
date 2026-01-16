@@ -17,6 +17,8 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
   const [progress, setProgress] = useState(0);
   const [speed, setSpeed] = useState(1);
   const [estimatedDuration, setEstimatedDuration] = useState(0);
+  const [speechSupported, setSpeechSupported] = useState<boolean | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   // Refs for tracking without causing re-renders
   const textRef = useRef('');
@@ -26,6 +28,37 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
   const durationRef = useRef(0);
   const animationFrameRef = useRef<number | null>(null);
   const chromeFixIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Check for speech synthesis support and mobile
+  useEffect(() => {
+    const checkSupport = () => {
+      if (typeof window !== 'undefined') {
+        setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
+        const synth = window.speechSynthesis;
+        if (synth) {
+          // Try to get voices - this helps detect actual support
+          const voices = synth.getVoices();
+          if (voices.length > 0) {
+            setSpeechSupported(true);
+          } else {
+            // Wait for voices to load
+            synth.onvoiceschanged = () => {
+              setSpeechSupported(synth.getVoices().length > 0);
+            };
+            // Fallback - assume supported if API exists
+            setTimeout(() => {
+              if (speechSupported === null) {
+                setSpeechSupported(!!synth);
+              }
+            }, 1000);
+          }
+        } else {
+          setSpeechSupported(false);
+        }
+      }
+    };
+    checkSupport();
+  }, []);
 
   const formattedDate = article.date?.seconds
     ? new Date(article.date.seconds * 1000).toLocaleDateString('en-US', {
@@ -403,98 +436,92 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
         </motion.div>
       )}
 
-      {/* Audio Player - Only for writeups */}
-      {article.type === 'writeup' && (
+      {/* Audio Player - Only for writeups, hidden on mobile due to poor support */}
+      {article.type === 'writeup' && !isMobile && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45, duration: 0.5 }}
           className="mb-10 p-4 bg-[var(--dark)] border border-[var(--border)] rounded-xl"
         >
-          {/* Main Player Row */}
-          <div className="flex items-center gap-3 sm:gap-4">
-            {/* Play/Stop Button */}
-            <button
-              onClick={handlePlayPause}
-              onTouchEnd={(e) => {
-                e.preventDefault();
-                handlePlayPause();
-              }}
-              className="w-11 h-11 sm:w-12 sm:h-12 flex-shrink-0 flex items-center justify-center bg-[var(--accent)] hover:bg-[var(--accent-hover)] active:bg-[var(--accent-hover)] text-white rounded-full transition-all active:scale-95 shadow-lg touch-manipulation"
-              aria-label={isPlaying ? 'Stop' : 'Play'}
-            >
-              {isPlaying ? (
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                  <rect x="6" y="5" width="4" height="14" rx="1" />
-                  <rect x="14" y="5" width="4" height="14" rx="1" />
-                </svg>
-              ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                  <polygon points="6 3 20 12 6 21 6 3" />
-                </svg>
-              )}
-            </button>
+          {speechSupported === false ? (
+            <p className="text-sm text-[var(--muted)] text-center py-2">
+              Text-to-speech is not supported in your browser.
+            </p>
+          ) : (
+            <>
+              {/* Main Player Row */}
+              <div className="flex items-center gap-4">
+                {/* Play/Stop Button */}
+                <button
+                  onClick={handlePlayPause}
+                  className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white rounded-full transition-all hover:scale-105 shadow-lg"
+                  aria-label={isPlaying ? 'Stop' : 'Play'}
+                >
+                  {isPlaying ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                      <rect x="6" y="5" width="4" height="14" rx="1" />
+                      <rect x="14" y="5" width="4" height="14" rx="1" />
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                      <polygon points="6 3 20 12 6 21 6 3" />
+                    </svg>
+                  )}
+                </button>
 
-            {/* Progress Section */}
-            <div className="flex-1 min-w-0">
-              {/* Clickable Progress Bar - taller on mobile for easier tapping */}
-              <div
-                className="relative w-full h-3 sm:h-2 bg-white/10 rounded-full cursor-pointer group touch-manipulation"
-                onClick={handleSeek}
-                onTouchEnd={(e) => {
-                  const touch = e.changedTouches[0];
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const clickX = touch.clientX - rect.left;
-                  const percentage = (clickX / rect.width) * 100;
-                  handleSeekToPercent(Math.min(Math.max(percentage, 0), 100));
-                }}
-              >
-                {/* Progress Fill */}
-                <div
-                  className="absolute top-0 left-0 h-full bg-[var(--accent)] rounded-full transition-[width] duration-100"
-                  style={{ width: `${progress}%` }}
-                />
-                {/* Thumb - always visible on mobile */}
-                <div
-                  className="absolute top-1/2 -translate-y-1/2 w-4 h-4 sm:w-3 sm:h-3 bg-white rounded-full shadow-md sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
-                  style={{ left: `calc(${progress}% - 8px)` }}
-                />
+                {/* Progress Section */}
+                <div className="flex-1 min-w-0">
+                  {/* Clickable Progress Bar */}
+                  <div
+                    className="relative w-full h-2 bg-white/10 rounded-full cursor-pointer group"
+                    onClick={handleSeek}
+                  >
+                    {/* Progress Fill */}
+                    <div
+                      className="absolute top-0 left-0 h-full bg-[var(--accent)] rounded-full"
+                      style={{ width: `${progress}%` }}
+                    />
+                    {/* Hover Thumb */}
+                    <div
+                      className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+                      style={{ left: `calc(${progress}% - 6px)` }}
+                    />
+                  </div>
+                  {/* Time Display */}
+                  <div className="flex justify-between text-xs text-[var(--muted)] mt-1.5">
+                    <span>{formatTime(progress)}</span>
+                    <span>{formatTotalTime()}</span>
+                  </div>
+                </div>
+
+                {/* Speed Selector */}
+                <select
+                  value={speed}
+                  onChange={(e) => handleSpeedChange(parseFloat(e.target.value))}
+                  className="bg-white/10 text-white text-xs px-2 py-1.5 rounded-lg border-none outline-none cursor-pointer hover:bg-white/20 transition-colors"
+                >
+                  <option value="0.75" className="bg-[var(--dark)]">0.75x</option>
+                  <option value="1" className="bg-[var(--dark)]">1x</option>
+                  <option value="1.25" className="bg-[var(--dark)]">1.25x</option>
+                  <option value="1.5" className="bg-[var(--dark)]">1.5x</option>
+                  <option value="2" className="bg-[var(--dark)]">2x</option>
+                </select>
               </div>
-              {/* Time Display */}
-              <div className="flex justify-between text-xs text-[var(--muted)] mt-1.5">
-                <span>{formatTime(progress)}</span>
-                <span>{formatTotalTime()}</span>
-              </div>
-            </div>
 
-            {/* Speed Selector */}
-            <div className="flex-shrink-0">
-              <select
-                value={speed}
-                onChange={(e) => handleSpeedChange(parseFloat(e.target.value))}
-                className="bg-white/10 text-white text-xs px-2 py-1.5 rounded-lg border-none outline-none cursor-pointer hover:bg-white/20 active:bg-white/20 transition-colors touch-manipulation"
-              >
-                <option value="0.75" className="bg-[var(--dark)]">0.75x</option>
-                <option value="1" className="bg-[var(--dark)]">1x</option>
-                <option value="1.25" className="bg-[var(--dark)]">1.25x</option>
-                <option value="1.5" className="bg-[var(--dark)]">1.5x</option>
-                <option value="2" className="bg-[var(--dark)]">2x</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Listen Label */}
-          <p className="text-xs text-[var(--muted)] mt-3 text-center">
-            <span className="inline-flex items-center gap-1.5">
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                <line x1="12" y1="19" x2="12" y2="23"/>
-                <line x1="8" y1="23" x2="16" y2="23"/>
-              </svg>
-              Listen to this article
-            </span>
-          </p>
+              <p className="text-xs text-[var(--muted)] mt-3 text-center">
+                <span className="inline-flex items-center gap-1.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                    <line x1="12" y1="19" x2="12" y2="23"/>
+                    <line x1="8" y1="23" x2="16" y2="23"/>
+                  </svg>
+                  Listen to this article
+                </span>
+              </p>
+            </>
+          )}
         </motion.div>
       )}
 
