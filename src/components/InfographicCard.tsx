@@ -32,7 +32,7 @@ export default function InfographicCard({ article, index = 0 }: InfographicCardP
         scale: 1.03,
         boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.2)',
       }}
-      className="group bg-white rounded-xl overflow-hidden"
+      className="group bg-[var(--background)] rounded-xl overflow-hidden border border-[var(--border)]"
     >
       <Link href={`/writeups/${article.id}`} className="block">
         <motion.div

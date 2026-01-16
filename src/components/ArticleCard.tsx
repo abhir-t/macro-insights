@@ -29,12 +29,12 @@ export default function ArticleCard({ article, featured = false, index = 0 }: Ar
         ease: 'easeOut',
       }}
       whileHover={{ x: -4 }}
-      className={`group bg-white border-b border-[var(--border)] pb-6 ${featured ? 'border-l-4 border-l-[var(--accent)] pl-6' : ''}`}
+      className={`group bg-[var(--background)] border-b border-[var(--border)] pb-6 ${featured ? 'border-l-4 border-l-[var(--accent)] pl-6' : ''}`}
     >
-      <Link href={`/writeups/${article.id}`} className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-stretch">
+      <Link href={`/writeups/${article.id}`} className="flex flex-col sm:flex-row gap-4 sm:gap-6 sm:items-center pt-4">
         {/* Thumbnail - on top for mobile, right side for desktop */}
         {article.imageUrl && (
-          <div className={`relative overflow-hidden rounded-lg flex-shrink-0 shadow-sm group-hover:shadow-lg transition-shadow duration-300 h-40 sm:h-auto ${featured ? 'sm:w-48' : 'sm:w-32'}`}>
+          <div className={`relative overflow-hidden rounded-lg flex-shrink-0 shadow-sm group-hover:shadow-lg transition-shadow duration-300 w-full h-48 ${featured ? 'sm:w-48 sm:h-36' : 'sm:w-32 sm:h-24'}`}>
             <motion.img
               src={article.imageUrl}
               alt={article.title}
@@ -46,7 +46,7 @@ export default function ArticleCard({ article, featured = false, index = 0 }: Ar
         )}
 
         {/* Text Content */}
-        <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
+        <div className="flex-1 min-w-0 flex flex-col justify-center">
           <div>
             <div className="flex items-center gap-2 sm:gap-3 mb-2 flex-wrap">
               <span className="byline text-xs sm:text-sm">{article.author}</span>

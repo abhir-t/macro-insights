@@ -4,6 +4,7 @@ import "./globals.css";
 import Navigation from "@/components/Navigation";
 import MobileNav from "@/components/MobileNav";
 import StickySignup from "@/components/StickySignup";
+import ThemeProvider from "@/components/ThemeProvider";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -35,6 +36,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${playfair.variable} ${inter.variable} antialiased`}>
+        <ThemeProvider>
         <div className="min-h-screen flex flex-col">
           <header className="bg-[var(--dark)] relative z-50">
             <div className="max-w-[1400px] mx-auto px-4 md:px-8 lg:px-16 py-4 md:py-5 flex items-center justify-between">
@@ -113,6 +115,7 @@ export default function RootLayout({
         </div>
         <StickySignup />
         <MobileNav />
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -24,7 +24,7 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12 pb-24 sm:pb-12 overflow-hidden"
+      className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12 pb-24 sm:pb-12"
     >
       {/* Back Button */}
       <motion.div
@@ -112,28 +112,28 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
         <ReactMarkdown
           rehypePlugins={[rehypeRaw]}
           components={{
-            // Charts - horizontally scrollable container for Google Sheets
-            iframe: ({ src }) => (
-              <div className="my-6 sm:my-8 border-l-4 border-[var(--accent)] bg-white rounded-r-lg shadow-lg">
-                <div className="overflow-x-auto">
+            // Charts - responsive with horizontal scroll when needed
+            iframe: ({ src, width, height }) => (
+              <div className="my-8 overflow-x-auto">
+                <div className="inline-block border-l-4 border-[var(--accent)] bg-white rounded-r-lg shadow-lg">
                   <iframe
                     src={src}
-                    width="1100"
-                    height="500"
+                    width={width || 800}
+                    height={height || 500}
                     frameBorder="0"
                     scrolling="no"
-                    style={{ border: 'none', display: 'block', minWidth: '1100px' }}
+                    style={{ border: 'none', display: 'block' }}
                   />
                 </div>
               </div>
             ),
-            // Images - simple responsive
+            // Images - centered and responsive
             img: ({ src, alt }) => (
-              <span className="block my-6 sm:my-8 w-full max-w-full overflow-hidden">
+              <span className="block my-8">
                 <img
                   src={src}
                   alt={alt || ''}
-                  style={{ width: '100%', maxWidth: '100%', height: 'auto', display: 'block', borderRadius: '8px' }}
+                  className="w-full h-auto rounded-lg"
                 />
                 {alt && (
                   <span className="block text-center text-sm text-[var(--muted)] mt-3 italic">
