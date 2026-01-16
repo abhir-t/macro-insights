@@ -326,3 +326,9 @@ body::after {
     height: 70px;
   }
 }
+
+/* Chart dark mode - invert colors */
+[data-theme="dark"] .dark-mode-chart {
+  filter: invert(0.9) hue-rotate(180deg);
+  border-color: var(--accent);
+}

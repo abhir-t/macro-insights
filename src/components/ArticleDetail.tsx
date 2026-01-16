@@ -112,10 +112,10 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
         <ReactMarkdown
           rehypePlugins={[rehypeRaw]}
           components={{
-            // Charts - responsive with horizontal scroll when needed
+            // Charts - responsive with horizontal scroll when needed, inverts in dark mode
             iframe: ({ src, width, height }) => (
               <div className="my-8 overflow-x-auto">
-                <div className="inline-block border-l-4 border-[var(--accent)] bg-white rounded-r-lg shadow-lg">
+                <div className="inline-block border-l-4 border-[var(--accent)] bg-white dark-mode-chart rounded-r-lg shadow-lg">
                   <iframe
                     src={src}
                     width={width || 800}
