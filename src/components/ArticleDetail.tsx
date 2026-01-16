@@ -35,6 +35,20 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
       })
     : '';
 
+  // Convert plain image URLs to markdown image syntax
+  const preprocessContent = (content: string): string => {
+    // Match URLs that look like images (ending in common image extensions or from image hosts)
+    const imageUrlRegex = /(^|\s)(https?:\/\/[^\s]+?(?:\.png|\.jpg|\.jpeg|\.gif|\.webp|\.svg|\/image\/upload\/[^\s]+))(\s|$)/gim;
+
+    return content.replace(imageUrlRegex, (match, before, url, after) => {
+      // Check if already in markdown image syntax
+      if (content.includes(`](${url})`)) {
+        return match;
+      }
+      return `${before}![](${url})${after}`;
+    });
+  };
+
   // Strip HTML and markdown for clean text
   const stripHtmlAndMarkdown = (text: string): string => {
     return text
@@ -494,6 +508,25 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
         <ReactMarkdown
           rehypePlugins={[rehypeRaw]}
           components={{
+            // Handle plain URLs that look like images (fallback)
+            p: ({ children, ...props }) => {
+              // Check if paragraph contains only a URL that looks like an image
+              if (typeof children === 'string') {
+                const trimmed = children.trim();
+                if (/^https?:\/\/[^\s]+(?:\.png|\.jpg|\.jpeg|\.gif|\.webp|\.svg|\/image\/upload\/)/i.test(trimmed)) {
+                  return (
+                    <span className="block my-8">
+                      <img
+                        src={trimmed}
+                        alt=""
+                        className="w-full h-auto rounded-lg"
+                      />
+                    </span>
+                  );
+                }
+              }
+              return <p {...props}>{children}</p>;
+            },
             iframe: ({ src, width, height }) => (
               <div className="my-8 overflow-x-auto">
                 <div className="inline-block border-l-4 border-[var(--accent)] bg-white dark-mode-chart rounded-r-lg shadow-lg">
