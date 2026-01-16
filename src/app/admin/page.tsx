@@ -25,7 +25,7 @@ export default function AdminPage() {
     return (
       <div className="max-w-md mx-auto px-6 py-24">
         <h1 className="font-serif text-3xl font-bold mb-2">Admin Access</h1>
-        <p className="text-slate-600 mb-8">Enter password to continue.</p>
+        <p className="text-[var(--muted)] mb-8">Enter password to continue.</p>
 
         <form onSubmit={handleLogin} className="space-y-4">
           <input
@@ -33,7 +33,7 @@ export default function AdminPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Enter password"
-            className="w-full px-4 py-3 border border-[var(--border)] bg-white text-sm focus:outline-none focus:border-[var(--accent)]"
+            className="w-full px-4 py-3 border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--accent)]"
           />
           {error && <p className="text-red-500 text-sm">{error}</p>}
           <button
@@ -50,7 +50,7 @@ export default function AdminPage() {
   return (
     <div className="max-w-2xl mx-auto px-6 py-12">
       <h1 className="font-serif text-3xl font-bold mb-2">Admin</h1>
-      <p className="text-slate-600 mb-8">Manage your newsletter.</p>
+      <p className="text-[var(--muted)] mb-8">Manage your newsletter.</p>
 
       {/* Subscribers & Contacts */}
       <div className="mb-12">

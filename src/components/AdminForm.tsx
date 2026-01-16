@@ -189,21 +189,21 @@ export default function AdminForm() {
       <div>
         <h2 className="text-xl font-semibold mb-4">Existing Articles</h2>
         {loadingArticles ? (
-          <p className="text-slate-500">Loading...</p>
+          <p className="text-[var(--muted)]">Loading...</p>
         ) : articles.length === 0 ? (
-          <p className="text-slate-500">No articles yet.</p>
+          <p className="text-[var(--muted)]">No articles yet.</p>
         ) : (
           <div className="space-y-2">
             {articles.map((article) => (
               <div
                 key={article.id}
-                className={`flex items-center justify-between p-4 border bg-white ${
-                  editingId === article.id ? 'border-[var(--accent)] bg-red-50' : 'border-[var(--border)]'
+                className={`flex items-center justify-between p-4 border bg-[var(--background)] ${
+                  editingId === article.id ? 'border-[var(--accent)]' : 'border-[var(--border)]'
                 }`}
               >
                 <div>
-                  <p className="font-medium">{article.title}</p>
-                  <p className="text-sm text-slate-500">{article.type} • {article.readTime}</p>
+                  <p className="font-medium text-[var(--foreground)]">{article.title}</p>
+                  <p className="text-sm text-[var(--muted)]">{article.type} • {article.readTime}</p>
                 </div>
                 <div className="flex gap-2">
                   <button
@@ -234,7 +234,7 @@ export default function AdminForm() {
           {editingId && (
             <button
               onClick={handleCancelEdit}
-              className="text-sm text-slate-500 hover:text-slate-700"
+              className="text-sm text-[var(--muted)] hover:text-[var(--foreground)]"
             >
               Cancel Edit
             </button>
@@ -251,7 +251,7 @@ export default function AdminForm() {
               name="type"
               value={formData.type}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-[var(--border)] bg-white text-sm focus:outline-none focus:border-[var(--accent)]"
+              className="w-full px-4 py-3 border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--accent)]"
             >
               <option value="writeup">Story</option>
               <option value="infographic">Infographic</option>
@@ -269,7 +269,7 @@ export default function AdminForm() {
               value={formData.title}
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 border border-[var(--border)] bg-white text-sm focus:outline-none focus:border-[var(--accent)]"
+              className="w-full px-4 py-3 border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--accent)]"
             />
           </div>
 
@@ -284,7 +284,7 @@ export default function AdminForm() {
               onChange={handleChange}
               required
               rows={2}
-              className="w-full px-4 py-3 border border-[var(--border)] bg-white text-sm focus:outline-none focus:border-[var(--accent)] resize-none"
+              className="w-full px-4 py-3 border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--accent)] resize-none"
             />
           </div>
 
@@ -294,69 +294,69 @@ export default function AdminForm() {
             </label>
 
             {/* Quick Format Buttons */}
-            <div className="mb-2 p-3 bg-slate-50 border border-slate-200 rounded">
-              <p className="text-xs text-slate-500 mb-2">Click to insert at cursor:</p>
+            <div className="mb-2 p-3 bg-[var(--background)] border border-[var(--border)] rounded">
+              <p className="text-xs text-[var(--muted)] mb-2">Click to insert at cursor:</p>
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
                   onClick={() => insertFormat('## ', '')}
-                  className="px-2 py-1 text-xs bg-white border border-slate-300 rounded hover:bg-slate-100"
+                  className="px-2 py-1 text-xs bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded hover:border-[var(--accent)]"
                 >
                   Heading
                 </button>
                 <button
                   type="button"
                   onClick={() => insertFormat('**', '**')}
-                  className="px-2 py-1 text-xs bg-white border border-slate-300 rounded hover:bg-slate-100"
+                  className="px-2 py-1 text-xs bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded hover:border-[var(--accent)]"
                 >
                   Bold
                 </button>
                 <button
                   type="button"
                   onClick={() => insertFormat('<span class="size-sm">', '</span>')}
-                  className="px-2 py-1 text-xs bg-white border border-slate-300 rounded hover:bg-slate-100"
+                  className="px-2 py-1 text-xs bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded hover:border-[var(--accent)]"
                 >
                   Small Text
                 </button>
                 <button
                   type="button"
                   onClick={() => insertFormat('<span class="size-lg">', '</span>')}
-                  className="px-2 py-1 text-xs bg-white border border-slate-300 rounded hover:bg-slate-100"
+                  className="px-2 py-1 text-xs bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded hover:border-[var(--accent)]"
                 >
                   Large Text
                 </button>
                 <button
                   type="button"
                   onClick={() => insertFormat('<span class="muted">', '</span>')}
-                  className="px-2 py-1 text-xs bg-white border border-slate-300 rounded hover:bg-slate-100"
+                  className="px-2 py-1 text-xs bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded hover:border-[var(--accent)]"
                 >
                   Gray Text
                 </button>
                 <button
                   type="button"
                   onClick={() => insertFormat('<div class="sources">\n\n', '\n\n</div>')}
-                  className="px-2 py-1 text-xs bg-white border border-slate-300 rounded hover:bg-slate-100"
+                  className="px-2 py-1 text-xs bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded hover:border-[var(--accent)]"
                 >
                   Sources Section
                 </button>
                 <button
                   type="button"
                   onClick={() => insertFormat('<p class="caption">', '</p>')}
-                  className="px-2 py-1 text-xs bg-white border border-slate-300 rounded hover:bg-slate-100"
+                  className="px-2 py-1 text-xs bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded hover:border-[var(--accent)]"
                 >
                   Caption
                 </button>
                 <button
                   type="button"
                   onClick={() => insertFormat('<div class="note">\n', '\n</div>')}
-                  className="px-2 py-1 text-xs bg-white border border-slate-300 rounded hover:bg-slate-100"
+                  className="px-2 py-1 text-xs bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded hover:border-[var(--accent)]"
                 >
                   Note Box
                 </button>
                 <button
                   type="button"
                   onClick={() => insertFormat('<div class="highlight-box">\n', '\n</div>')}
-                  className="px-2 py-1 text-xs bg-white border border-slate-300 rounded hover:bg-slate-100"
+                  className="px-2 py-1 text-xs bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded hover:border-[var(--accent)]"
                 >
                   Highlight Box
                 </button>
@@ -372,9 +372,9 @@ export default function AdminForm() {
               required
               rows={20}
               placeholder="## Introduction&#10;&#10;Your content here with **bold text** for emphasis...&#10;&#10;## Next Section&#10;&#10;<iframe src='chart-url' width='100%' height='400'></iframe>"
-              className="w-full px-4 py-3 border border-[var(--border)] bg-white text-sm font-mono focus:outline-none focus:border-[var(--accent)] resize-none"
+              className="w-full px-4 py-3 border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-sm font-mono focus:outline-none focus:border-[var(--accent)] resize-none"
             />
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-[var(--muted)] mt-1">
               Estimated read time: {calculateReadTime(formData.content)}
             </p>
           </div>
@@ -390,7 +390,7 @@ export default function AdminForm() {
               value={formData.author}
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 border border-[var(--border)] bg-white text-sm focus:outline-none focus:border-[var(--accent)]"
+              className="w-full px-4 py-3 border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--accent)]"
             />
           </div>
 
@@ -405,13 +405,13 @@ export default function AdminForm() {
               value={formData.imageUrl}
               onChange={handleChange}
               placeholder="https://images.unsplash.com/..."
-              className="w-full px-4 py-3 border border-[var(--border)] bg-white text-sm focus:outline-none focus:border-[var(--accent)]"
+              className="w-full px-4 py-3 border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--accent)]"
             />
           </div>
 
           {/* Send to subscribers checkbox - only show for new articles */}
           {!editingId && (
-            <div className="flex items-center gap-3 p-4 bg-slate-50 border border-slate-200">
+            <div className="flex items-center gap-3 p-4 bg-[var(--background)] border border-[var(--border)]">
               <input
                 type="checkbox"
                 id="sendToSubscribers"
@@ -419,9 +419,9 @@ export default function AdminForm() {
                 onChange={(e) => setSendToSubscribers(e.target.checked)}
                 className="w-5 h-5 accent-[var(--accent)]"
               />
-              <label htmlFor="sendToSubscribers" className="text-sm">
+              <label htmlFor="sendToSubscribers" className="text-sm text-[var(--foreground)]">
                 <span className="font-medium">Send to all subscribers</span>
-                <span className="text-slate-500 block text-xs">Email this article to everyone who subscribed</span>
+                <span className="text-[var(--muted)] block text-xs">Email this article to everyone who subscribed</span>
               </label>
             </div>
           )}

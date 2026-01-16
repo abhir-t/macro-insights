@@ -43,7 +43,7 @@ export default function AdminData() {
           className={`pb-3 px-1 text-sm font-medium transition-colors ${
             activeTab === 'subscribers'
               ? 'text-[var(--accent)] border-b-2 border-[var(--accent)]'
-              : 'text-slate-500 hover:text-slate-700'
+              : 'text-[var(--muted)] hover:text-[var(--foreground)]'
           }`}
         >
           Subscribers ({subscribers.length})
@@ -53,7 +53,7 @@ export default function AdminData() {
           className={`pb-3 px-1 text-sm font-medium transition-colors ${
             activeTab === 'contacts'
               ? 'text-[var(--accent)] border-b-2 border-[var(--accent)]'
-              : 'text-slate-500 hover:text-slate-700'
+              : 'text-[var(--muted)] hover:text-[var(--foreground)]'
           }`}
         >
           Contact Messages ({contacts.length})
@@ -61,16 +61,16 @@ export default function AdminData() {
       </div>
 
       {loading ? (
-        <p className="text-slate-500">Loading...</p>
+        <p className="text-[var(--muted)]">Loading...</p>
       ) : activeTab === 'subscribers' ? (
         <div className="space-y-2">
           {subscribers.length === 0 ? (
-            <p className="text-slate-500">No subscribers yet.</p>
+            <p className="text-[var(--muted)]">No subscribers yet.</p>
           ) : (
             subscribers.map((sub) => (
-              <div key={sub.id} className="flex justify-between items-center p-3 bg-white border border-[var(--border)]">
-                <span className="font-medium">{sub.email}</span>
-                <span className="text-xs text-slate-500">{formatDate(sub.subscribedAt?.seconds)}</span>
+              <div key={sub.id} className="flex justify-between items-center p-3 bg-[var(--background)] border border-[var(--border)]">
+                <span className="font-medium text-[var(--foreground)]">{sub.email}</span>
+                <span className="text-xs text-[var(--muted)]">{formatDate(sub.subscribedAt?.seconds)}</span>
               </div>
             ))
           )}
@@ -78,18 +78,18 @@ export default function AdminData() {
       ) : (
         <div className="space-y-4">
           {contacts.length === 0 ? (
-            <p className="text-slate-500">No contact messages yet.</p>
+            <p className="text-[var(--muted)]">No contact messages yet.</p>
           ) : (
             contacts.map((contact) => (
-              <div key={contact.id} className="p-4 bg-white border border-[var(--border)]">
+              <div key={contact.id} className="p-4 bg-[var(--background)] border border-[var(--border)]">
                 <div className="flex justify-between items-start mb-2">
                   <div>
-                    <span className="font-medium">{contact.name}</span>
-                    <span className="text-slate-500 ml-2">({contact.email})</span>
+                    <span className="font-medium text-[var(--foreground)]">{contact.name}</span>
+                    <span className="text-[var(--muted)] ml-2">({contact.email})</span>
                   </div>
-                  <span className="text-xs text-slate-500">{formatDate(contact.createdAt?.seconds)}</span>
+                  <span className="text-xs text-[var(--muted)]">{formatDate(contact.createdAt?.seconds)}</span>
                 </div>
-                <p className="text-sm text-slate-700 whitespace-pre-wrap">{contact.message}</p>
+                <p className="text-sm text-[var(--foreground)] whitespace-pre-wrap">{contact.message}</p>
               </div>
             ))
           )}
