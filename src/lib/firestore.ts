@@ -165,3 +165,12 @@ export async function getSubscribersList(): Promise<{ id: string; email: string;
     };
   });
 }
+
+export async function deleteSubscriber(id: string): Promise<void> {
+  if (!isConfigured || !db) {
+    throw new Error('Firebase is not configured');
+  }
+
+  const docRef = doc(db, SUBSCRIBERS_PATH, id);
+  await deleteDoc(docRef);
+}

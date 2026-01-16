@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getSubscribersList, getContacts } from '@/lib/firestore';
+import { getSubscribersList, getContacts, deleteSubscriber } from '@/lib/firestore';
 
 export default function AdminData() {
   const [subscribers, setSubscribers] = useState<{ id: string; email: string; subscribedAt: { seconds: number } }[]>([]);
@@ -32,6 +32,18 @@ export default function AdminData() {
       hour: '2-digit',
       minute: '2-digit',
     });
+  };
+
+  const handleDeleteSubscriber = async (id: string, email: string) => {
+    if (!confirm(`Remove subscriber "${email}"?`)) return;
+
+    try {
+      await deleteSubscriber(id);
+      setSubscribers(subscribers.filter(s => s.id !== id));
+    } catch (error) {
+      console.error('Error deleting subscriber:', error);
+      alert('Failed to remove subscriber');
+    }
   };
 
   return (
@@ -70,7 +82,15 @@ export default function AdminData() {
             subscribers.map((sub) => (
               <div key={sub.id} className="flex justify-between items-center p-3 bg-[var(--background)] border border-[var(--border)]">
                 <span className="font-medium text-[var(--foreground)]">{sub.email}</span>
-                <span className="text-xs text-[var(--muted)]">{formatDate(sub.subscribedAt?.seconds)}</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-[var(--muted)]">{formatDate(sub.subscribedAt?.seconds)}</span>
+                  <button
+                    onClick={() => handleDeleteSubscriber(sub.id, sub.email)}
+                    className="text-xs text-red-500 hover:text-red-700 transition-colors"
+                  >
+                    Remove
+                  </button>
+                </div>
               </div>
             ))
           )}
