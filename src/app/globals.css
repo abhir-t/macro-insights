@@ -334,6 +334,12 @@ body::after {
 }
 
 /* Adaptive text color - white in dark mode, black in light mode */
-.color-adaptive {
-  color: var(--foreground);
+.color-adaptive,
+.color-adaptive strong,
+.color-adaptive em,
+.color-adaptive span,
+.prose .color-adaptive,
+.prose .color-adaptive strong,
+.prose .color-adaptive em {
+  color: var(--foreground) !important;
 }
