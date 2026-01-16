@@ -60,14 +60,12 @@ export default function Navigation() {
             </svg>
           )}
         </button>
-        <a
-          href="https://buymeacoffee.com/macroinsights"
-          target="_blank"
-          rel="noopener noreferrer"
+        <Link
+          href="/donate"
           className="ml-2 px-5 py-2 bg-[var(--accent)] text-white text-sm font-semibold uppercase tracking-wider hover:bg-[var(--accent-hover)] transition-all duration-200 rounded shadow-lg shadow-red-500/30 hover:scale-110"
         >
           Donate
-        </a>
+        </Link>
       </nav>
 
       {/* Mobile: Theme Toggle + Menu Button */}
@@ -135,14 +133,13 @@ export default function Navigation() {
                 </Link>
               );
             })}
-            <a
-              href="https://buymeacoffee.com/macroinsights"
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href="/donate"
+              onClick={() => setIsOpen(false)}
               className="px-5 py-3 bg-[var(--accent)] text-white text-sm font-semibold uppercase tracking-wider text-center rounded"
             >
               Donate
-            </a>
+            </Link>
           </div>
         </div>
       )}
