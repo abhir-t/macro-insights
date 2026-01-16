@@ -21,8 +21,40 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Vantage Post",
-  description: "Business, Finance & Market Intelligence",
+  title: {
+    default: "Vantage Post",
+    template: "%s | Vantage Post",
+  },
+  description: "Insights that move markets. Deep dives into business, finance, and the forces shaping our world.",
+  keywords: ["finance", "business", "markets", "investing", "economics", "newsletter"],
+  authors: [{ name: "Vantage Post" }],
+  creator: "Vantage Post",
+  publisher: "Vantage Post",
+  metadataBase: new URL("https://www.vantagepost.site"),
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://www.vantagepost.site",
+    siteName: "Vantage Post",
+    title: "Vantage Post",
+    description: "Insights that move markets. Deep dives into business, finance, and the forces shaping our world.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Vantage Post",
+    description: "Insights that move markets. Deep dives into business, finance, and the forces shaping our world.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   icons: {
     icon: '/favicon.svg',
   },
