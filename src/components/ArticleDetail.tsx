@@ -12,16 +12,21 @@ interface ArticleDetailProps {
 }
 
 export default function ArticleDetail({ article }: ArticleDetailProps) {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
+  // Audio player state
+  const [playerState, setPlayerState] = useState<'idle' | 'playing' | 'paused'>('idle');
   const [progress, setProgress] = useState(0);
   const [speed, setSpeed] = useState(1);
-  const [estimatedDuration, setEstimatedDuration] = useState(0);
-  const [elapsedTime, setElapsedTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+
+  // Refs for tracking
+  const textRef = useRef<string>('');
+  const textLengthRef = useRef<number>(0);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const startTimeRef = useRef<number>(0);
-  const pausedTimeRef = useRef<number>(0);
+  const chromeFixIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const lastCharIndexRef = useRef<number>(0);
+  const isStoppingRef = useRef<boolean>(false);
 
   const formattedDate = article.date?.seconds
     ? new Date(article.date.seconds * 1000).toLocaleDateString('en-US', {
@@ -31,9 +36,10 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
       })
     : '';
 
+  // Strip HTML and markdown for clean text
   const stripHtmlAndMarkdown = useCallback((text: string): string => {
     return text
-      .replace(/<[^>]*>/g, '')
+      .replace(/<[^>]*>/g, ' ')
       .replace(/#{1,6}\s/g, '')
       .replace(/\*\*([^*]+)\*\*/g, '$1')
       .replace(/\*([^*]+)\*/g, '$1')
@@ -41,178 +47,272 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
       .replace(/`([^`]+)`/g, '$1')
       .replace(/>\s/g, '')
       .replace(/[-*]\s/g, '')
+      .replace(/\s+/g, ' ')
       .trim();
   }, []);
 
+  // Get text to read
   const getTextToRead = useCallback(() => {
-    return `${article.title}. By ${article.author}. ${stripHtmlAndMarkdown(article.content)}`;
+    const cleanContent = stripHtmlAndMarkdown(article.content);
+    return `${article.title}. By ${article.author}. ${cleanContent}`;
   }, [article.title, article.author, article.content, stripHtmlAndMarkdown]);
 
-  // Calculate estimated duration based on word count and speed
+  // Calculate duration on mount
   useEffect(() => {
     const text = getTextToRead();
+    textRef.current = text;
+    textLengthRef.current = text.length;
+
+    // Estimate duration: ~150 words per minute, average word length ~5 chars
     const wordCount = text.split(/\s+/).length;
-    // Average speaking rate is about 150 words per minute at 1x speed
     const baseDuration = (wordCount / 150) * 60;
-    setEstimatedDuration(baseDuration);
+    setDuration(baseDuration);
   }, [getTextToRead]);
 
-  // Clean up on unmount
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (typeof window !== 'undefined' && window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-      }
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
+      cleanupSpeech();
     };
   }, []);
 
-  const startProgressTracking = () => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
+  // Clean up all speech-related resources
+  const cleanupSpeech = () => {
+    isStoppingRef.current = true;
+
+    if (chromeFixIntervalRef.current) {
+      clearInterval(chromeFixIntervalRef.current);
+      chromeFixIntervalRef.current = null;
     }
 
-    startTimeRef.current = Date.now() - pausedTimeRef.current;
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = null;
+    }
 
-    intervalRef.current = setInterval(() => {
-      const elapsed = (Date.now() - startTimeRef.current) / 1000;
-      const adjustedDuration = estimatedDuration / speed;
-      const currentProgress = Math.min((elapsed / adjustedDuration) * 100, 100);
-      setElapsedTime(elapsed);
-      setProgress(currentProgress);
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
 
-      if (currentProgress >= 100) {
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-        }
-      }
+    utteranceRef.current = null;
+    lastCharIndexRef.current = 0;
+
+    setTimeout(() => {
+      isStoppingRef.current = false;
     }, 100);
   };
 
-  const stopProgressTracking = () => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
+  // Start progress tracking based on character position
+  const startProgressTracking = () => {
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
     }
+
+    const startTime = Date.now();
+    const estimatedDuration = (duration / speed) * 1000; // in ms
+
+    progressIntervalRef.current = setInterval(() => {
+      if (isStoppingRef.current) return;
+
+      const elapsed = Date.now() - startTime;
+      const progressPercent = Math.min((elapsed / estimatedDuration) * 100, 99);
+      const elapsedSeconds = elapsed / 1000;
+
+      setProgress(progressPercent);
+      setCurrentTime(elapsedSeconds);
+    }, 200);
   };
 
-  const handlePlay = () => {
+  // Chrome fix: pause/resume to prevent speech from stopping
+  const startChromeFix = () => {
+    if (chromeFixIntervalRef.current) {
+      clearInterval(chromeFixIntervalRef.current);
+    }
+
+    chromeFixIntervalRef.current = setInterval(() => {
+      if (isStoppingRef.current) return;
+
+      const synth = window.speechSynthesis;
+      if (synth.speaking && !synth.paused) {
+        synth.pause();
+        synth.resume();
+      }
+    }, 10000); // Every 10 seconds
+  };
+
+  // Handle play/pause
+  const handlePlayPause = () => {
     if (typeof window === 'undefined' || !window.speechSynthesis) {
       alert('Text-to-speech is not supported in your browser');
       return;
     }
 
-    if (isPlaying && !isPaused) {
+    const synth = window.speechSynthesis;
+
+    if (playerState === 'playing') {
       // Pause
-      window.speechSynthesis.pause();
-      setIsPaused(true);
-      pausedTimeRef.current = Date.now() - startTimeRef.current;
-      stopProgressTracking();
+      synth.pause();
+      setPlayerState('paused');
+
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+      if (chromeFixIntervalRef.current) {
+        clearInterval(chromeFixIntervalRef.current);
+        chromeFixIntervalRef.current = null;
+      }
       return;
     }
 
-    if (isPaused) {
+    if (playerState === 'paused') {
       // Resume
-      window.speechSynthesis.resume();
-      setIsPaused(false);
+      synth.resume();
+      setPlayerState('playing');
       startProgressTracking();
+      startChromeFix();
       return;
     }
 
     // Start new speech
-    window.speechSynthesis.cancel();
-    pausedTimeRef.current = 0;
+    cleanupSpeech();
 
-    const textToRead = getTextToRead();
-    const utterance = new SpeechSynthesisUtterance(textToRead);
-    utterance.rate = speed;
-    utterance.pitch = 1;
+    // Small delay to ensure cleanup is complete
+    setTimeout(() => {
+      const text = textRef.current;
+      const utterance = new SpeechSynthesisUtterance(text);
 
-    utterance.onend = () => {
-      setIsPlaying(false);
-      setIsPaused(false);
-      setProgress(100);
-      stopProgressTracking();
-    };
-
-    utterance.onerror = () => {
-      setIsPlaying(false);
-      setIsPaused(false);
-      stopProgressTracking();
-    };
-
-    utteranceRef.current = utterance;
-    window.speechSynthesis.speak(utterance);
-    setIsPlaying(true);
-    setIsPaused(false);
-    startProgressTracking();
-  };
-
-  const handleStop = () => {
-    if (typeof window !== 'undefined' && window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-      setIsPlaying(false);
-      setIsPaused(false);
-      setProgress(0);
-      setElapsedTime(0);
-      pausedTimeRef.current = 0;
-      stopProgressTracking();
-    }
-  };
-
-  const handleSpeedChange = (newSpeed: number) => {
-    setSpeed(newSpeed);
-
-    // If currently playing, restart with new speed
-    if (isPlaying && !isPaused && typeof window !== 'undefined' && window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-      stopProgressTracking();
-
-      const textToRead = getTextToRead();
-      const utterance = new SpeechSynthesisUtterance(textToRead);
-      utterance.rate = newSpeed;
+      utterance.rate = speed;
       utterance.pitch = 1;
+      utterance.volume = 1;
 
-      utterance.onend = () => {
-        setIsPlaying(false);
-        setIsPaused(false);
-        setProgress(100);
-        stopProgressTracking();
+      utterance.onstart = () => {
+        if (isStoppingRef.current) return;
+        setPlayerState('playing');
+        startProgressTracking();
+        startChromeFix();
       };
 
-      utterance.onerror = () => {
-        setIsPlaying(false);
-        setIsPaused(false);
-        stopProgressTracking();
+      utterance.onend = () => {
+        if (isStoppingRef.current) return;
+        setPlayerState('idle');
+        setProgress(100);
+        setCurrentTime(duration / speed);
+
+        if (chromeFixIntervalRef.current) {
+          clearInterval(chromeFixIntervalRef.current);
+          chromeFixIntervalRef.current = null;
+        }
+        if (progressIntervalRef.current) {
+          clearInterval(progressIntervalRef.current);
+          progressIntervalRef.current = null;
+        }
+      };
+
+      utterance.onerror = (event) => {
+        // Ignore 'interrupted' errors from cancel()
+        if (event.error === 'interrupted' || isStoppingRef.current) return;
+
+        console.error('Speech error:', event.error);
+        setPlayerState('idle');
+
+        if (chromeFixIntervalRef.current) {
+          clearInterval(chromeFixIntervalRef.current);
+          chromeFixIntervalRef.current = null;
+        }
+        if (progressIntervalRef.current) {
+          clearInterval(progressIntervalRef.current);
+          progressIntervalRef.current = null;
+        }
+      };
+
+      utterance.onboundary = (event) => {
+        if (isStoppingRef.current) return;
+        if (event.charIndex !== undefined) {
+          lastCharIndexRef.current = event.charIndex;
+          const progressPercent = (event.charIndex / textLengthRef.current) * 100;
+          setProgress(Math.min(progressPercent, 99));
+        }
       };
 
       utteranceRef.current = utterance;
+      isStoppingRef.current = false;
+      synth.speak(utterance);
+    }, 50);
+  };
 
-      // Reset progress for speed change
-      pausedTimeRef.current = 0;
-      setProgress(0);
-      setElapsedTime(0);
+  // Handle stop
+  const handleStop = () => {
+    cleanupSpeech();
+    setPlayerState('idle');
+    setProgress(0);
+    setCurrentTime(0);
+  };
 
-      window.speechSynthesis.speak(utterance);
-      startProgressTracking();
+  // Handle speed change
+  const handleSpeedChange = (newSpeed: number) => {
+    const wasPlaying = playerState === 'playing';
+
+    // Stop current speech
+    cleanupSpeech();
+    setSpeed(newSpeed);
+    setProgress(0);
+    setCurrentTime(0);
+    setPlayerState('idle');
+
+    // If was playing, restart with new speed after a brief delay
+    if (wasPlaying) {
+      setTimeout(() => {
+        const synth = window.speechSynthesis;
+        const text = textRef.current;
+        const utterance = new SpeechSynthesisUtterance(text);
+
+        utterance.rate = newSpeed;
+        utterance.pitch = 1;
+        utterance.volume = 1;
+
+        utterance.onstart = () => {
+          if (isStoppingRef.current) return;
+          setPlayerState('playing');
+          startProgressTracking();
+          startChromeFix();
+        };
+
+        utterance.onend = () => {
+          if (isStoppingRef.current) return;
+          setPlayerState('idle');
+          setProgress(100);
+          setCurrentTime(duration / newSpeed);
+
+          if (chromeFixIntervalRef.current) {
+            clearInterval(chromeFixIntervalRef.current);
+          }
+          if (progressIntervalRef.current) {
+            clearInterval(progressIntervalRef.current);
+          }
+        };
+
+        utterance.onerror = (event) => {
+          if (event.error === 'interrupted' || isStoppingRef.current) return;
+          setPlayerState('idle');
+        };
+
+        utterance.onboundary = (event) => {
+          if (isStoppingRef.current) return;
+          if (event.charIndex !== undefined) {
+            const progressPercent = (event.charIndex / textLengthRef.current) * 100;
+            setProgress(Math.min(progressPercent, 99));
+          }
+        };
+
+        utteranceRef.current = utterance;
+        isStoppingRef.current = false;
+        synth.speak(utterance);
+      }, 100);
     }
   };
 
-  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
-    // Web Speech API doesn't support seeking, so we'll restart from beginning
-    // This is a limitation of the browser API
-    if (!isPlaying) return;
-
-    const rect = e.currentTarget.getBoundingClientRect();
-    const clickPosition = (e.clientX - rect.left) / rect.width;
-
-    // For now, just show a visual feedback - true seeking isn't supported
-    // If user clicks, we restart from the beginning
-    handleStop();
-  };
-
+  // Format time display
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
@@ -310,13 +410,14 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
           transition={{ delay: 0.45, duration: 0.5 }}
           className="mb-10 p-4 bg-[var(--background)] border border-[var(--border)] rounded-lg"
         >
-          <div className="flex items-center gap-4 mb-3">
+          <div className="flex items-center gap-3 sm:gap-4 mb-3">
             {/* Play/Pause Button */}
             <button
-              onClick={handlePlay}
-              className="w-12 h-12 flex items-center justify-center bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white rounded-full transition-colors flex-shrink-0"
+              onClick={handlePlayPause}
+              className="w-11 h-11 sm:w-12 sm:h-12 flex items-center justify-center bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white rounded-full transition-colors flex-shrink-0"
+              aria-label={playerState === 'playing' ? 'Pause' : 'Play'}
             >
-              {isPlaying && !isPaused ? (
+              {playerState === 'playing' ? (
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                   <rect x="6" y="4" width="4" height="16" />
                   <rect x="14" y="4" width="4" height="16" />
@@ -329,29 +430,27 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
             </button>
 
             {/* Progress Bar */}
-            <div className="flex-1">
-              <div
-                className="h-2 bg-[var(--border)] rounded-full cursor-pointer overflow-hidden"
-                onClick={handleSeek}
-              >
+            <div className="flex-1 min-w-0">
+              <div className="h-2 bg-[var(--border)] rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-[var(--accent)] rounded-full transition-all duration-100"
+                  className="h-full bg-[var(--accent)] rounded-full transition-[width] duration-200 ease-linear"
                   style={{ width: `${progress}%` }}
                 />
               </div>
               <div className="flex justify-between text-xs text-[var(--muted)] mt-1">
-                <span>{formatTime(elapsedTime)}</span>
-                <span>{formatTime(estimatedDuration / speed)}</span>
+                <span>{formatTime(currentTime)}</span>
+                <span>{formatTime(duration / speed)}</span>
               </div>
             </div>
 
             {/* Stop Button */}
-            {isPlaying && (
+            {playerState !== 'idle' && (
               <button
                 onClick={handleStop}
-                className="w-10 h-10 flex items-center justify-center text-[var(--muted)] hover:text-[var(--foreground)] transition-colors flex-shrink-0"
+                className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center text-[var(--muted)] hover:text-[var(--foreground)] transition-colors flex-shrink-0"
+                aria-label="Stop"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                   <rect x="4" y="4" width="16" height="16" rx="2" />
                 </svg>
               </button>
@@ -359,7 +458,7 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
           </div>
 
           {/* Speed Controls */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs text-[var(--muted)]">Speed:</span>
             {[0.75, 1, 1.25, 1.5, 2].map((s) => (
               <button
@@ -388,7 +487,6 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
         <ReactMarkdown
           rehypePlugins={[rehypeRaw]}
           components={{
-            // Charts - responsive with horizontal scroll when needed, inverts in dark mode
             iframe: ({ src, width, height }) => (
               <div className="my-8 overflow-x-auto">
                 <div className="inline-block border-l-4 border-[var(--accent)] bg-white dark-mode-chart rounded-r-lg shadow-lg">
@@ -403,7 +501,6 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
                 </div>
               </div>
             ),
-            // Images - centered and responsive
             img: ({ src, alt }) => (
               <span className="block my-8">
                 <img
@@ -418,7 +515,6 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
                 )}
               </span>
             ),
-            // Styled headings
             h2: ({ children }) => (
               <motion.h2
                 initial={{ opacity: 0, x: -20 }}
@@ -439,7 +535,6 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
                 {children}
               </motion.h3>
             ),
-            // Styled blockquotes
             blockquote: ({ children }) => (
               <motion.blockquote
                 initial={{ opacity: 0, x: -20 }}
@@ -451,7 +546,6 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
                 {children}
               </motion.blockquote>
             ),
-            // Styled lists
             ul: ({ children }) => (
               <motion.ul
                 initial={{ opacity: 0 }}
@@ -466,7 +560,6 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
             li: ({ children }) => (
               <li className="text-[var(--foreground)] pl-2">{children}</li>
             ),
-            // Bold text in accent color
             strong: ({ children }) => (
               <strong className="text-[var(--accent)] font-semibold">{children}</strong>
             ),
