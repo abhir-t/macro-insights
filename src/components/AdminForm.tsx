@@ -367,6 +367,18 @@ export default function AdminForm() {
                 >
                   Highlight Box
                 </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const url = prompt('Enter image URL:');
+                    if (url) {
+                      insertFormat(`![](${url})`, '');
+                    }
+                  }}
+                  className="px-2 py-1 text-xs bg-[var(--accent)] text-white border border-[var(--accent)] rounded hover:bg-[var(--accent-hover)]"
+                >
+                  + Image
+                </button>
               </div>
             </div>
 
@@ -378,7 +390,7 @@ export default function AdminForm() {
               onChange={handleChange}
               required
               rows={20}
-              placeholder="## Introduction&#10;&#10;Your content here with **bold text** for emphasis...&#10;&#10;## Next Section&#10;&#10;<iframe src='chart-url' width='100%' height='400'></iframe>"
+              placeholder="## Introduction&#10;&#10;Your content here with **bold text** for emphasis...&#10;&#10;![](https://your-image-url.png)&#10;&#10;Or just paste image URL on its own line:&#10;https://res.cloudinary.com/your-image.png&#10;&#10;## Next Section"
               className="w-full px-4 py-3 border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-sm font-mono focus:outline-none focus:border-[var(--accent)] resize-none"
             />
             <p className="text-xs text-[var(--muted)] mt-1">

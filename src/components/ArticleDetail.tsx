@@ -536,22 +536,62 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
           rehypePlugins={[rehypeRaw]}
           components={{
             // Handle plain URLs that look like images (fallback)
-            p: ({ children, ...props }) => {
-              // Check if paragraph contains only a URL that looks like an image
-              if (typeof children === 'string') {
-                const trimmed = children.trim();
-                if (/^https?:\/\/[^\s]+(?:\.png|\.jpg|\.jpeg|\.gif|\.webp|\.svg|\/image\/upload\/)/i.test(trimmed)) {
-                  return (
-                    <span className="block my-8">
-                      <img
-                        src={trimmed}
-                        alt=""
-                        className="w-full h-auto rounded-lg"
-                      />
-                    </span>
-                  );
-                }
+            p: ({ children, node, ...props }) => {
+              // Helper to check if a string is an image URL
+              const isImageUrl = (str: string) => {
+                const trimmed = str.trim();
+                return /^https?:\/\/[^\s]+(?:\.png|\.jpg|\.jpeg|\.gif|\.webp|\.svg|\/image\/upload\/)/i.test(trimmed);
+              };
+
+              // Helper to render image
+              const renderImage = (url: string) => (
+                <span className="block my-8" key={url}>
+                  <img
+                    src={url.trim()}
+                    alt=""
+                    className="w-full h-auto rounded-lg"
+                  />
+                </span>
+              );
+
+              // Check if children is a single string that's an image URL
+              if (typeof children === 'string' && isImageUrl(children)) {
+                return renderImage(children);
               }
+
+              // Check if children is an array and process each element
+              if (Array.isArray(children)) {
+                const processedChildren: React.ReactNode[] = [];
+                let hasOnlyImagesAndWhitespace = true;
+
+                children.forEach((child, index) => {
+                  if (typeof child === 'string') {
+                    // Check if this string contains image URLs
+                    const parts = child.split(/(\s+)/);
+                    parts.forEach((part, partIndex) => {
+                      if (isImageUrl(part)) {
+                        processedChildren.push(renderImage(part));
+                      } else if (part.trim()) {
+                        hasOnlyImagesAndWhitespace = false;
+                        processedChildren.push(part);
+                      } else {
+                        processedChildren.push(part);
+                      }
+                    });
+                  } else {
+                    hasOnlyImagesAndWhitespace = false;
+                    processedChildren.push(child);
+                  }
+                });
+
+                // If it was only images and whitespace, return without <p> wrapper
+                if (hasOnlyImagesAndWhitespace && processedChildren.some(c => React.isValidElement(c))) {
+                  return <>{processedChildren}</>;
+                }
+
+                return <p {...props}>{processedChildren}</p>;
+              }
+
               return <p {...props}>{children}</p>;
             },
             iframe: ({ src, width, height }) => (
