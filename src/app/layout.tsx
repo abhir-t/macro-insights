@@ -34,7 +34,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" data-theme="dark">
       <body className={`${playfair.variable} ${inter.variable} antialiased`}>
         <ThemeProvider>
         <div className="min-h-screen flex flex-col">
