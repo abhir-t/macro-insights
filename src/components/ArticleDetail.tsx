@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import Link from 'next/link';
@@ -11,6 +12,10 @@ interface ArticleDetailProps {
 }
 
 export default function ArticleDetail({ article }: ArticleDetailProps) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+
   const formattedDate = article.date?.seconds
     ? new Date(article.date.seconds * 1000).toLocaleDateString('en-US', {
         year: 'numeric',
@@ -18,6 +23,80 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
         day: 'numeric',
       })
     : '';
+
+  // Clean up speech on unmount
+  useEffect(() => {
+    return () => {
+      if (typeof window !== 'undefined' && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
+  const stripHtmlAndMarkdown = (text: string): string => {
+    return text
+      .replace(/<[^>]*>/g, '') // Remove HTML tags
+      .replace(/#{1,6}\s/g, '') // Remove markdown headers
+      .replace(/\*\*([^*]+)\*\*/g, '$1') // Remove bold
+      .replace(/\*([^*]+)\*/g, '$1') // Remove italic
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove links, keep text
+      .replace(/`([^`]+)`/g, '$1') // Remove code
+      .replace(/>\s/g, '') // Remove blockquote markers
+      .replace(/[-*]\s/g, '') // Remove list markers
+      .trim();
+  };
+
+  const handleListen = () => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) {
+      alert('Text-to-speech is not supported in your browser');
+      return;
+    }
+
+    if (isPlaying && !isPaused) {
+      // Pause
+      window.speechSynthesis.pause();
+      setIsPaused(true);
+      return;
+    }
+
+    if (isPaused) {
+      // Resume
+      window.speechSynthesis.resume();
+      setIsPaused(false);
+      return;
+    }
+
+    // Start new speech
+    window.speechSynthesis.cancel();
+
+    const textToRead = `${article.title}. By ${article.author}. ${stripHtmlAndMarkdown(article.content)}`;
+    const utterance = new SpeechSynthesisUtterance(textToRead);
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+
+    utterance.onend = () => {
+      setIsPlaying(false);
+      setIsPaused(false);
+    };
+
+    utterance.onerror = () => {
+      setIsPlaying(false);
+      setIsPaused(false);
+    };
+
+    utteranceRef.current = utterance;
+    window.speechSynthesis.speak(utterance);
+    setIsPlaying(true);
+    setIsPaused(false);
+  };
+
+  const handleStop = () => {
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+      setIsPlaying(false);
+      setIsPaused(false);
+    }
+  };
 
   return (
     <motion.article
@@ -68,12 +147,43 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
           transition={{ delay: 0.3, duration: 0.5 }}
           className="h-1 bg-[var(--accent)] mb-6"
         />
-        <div className="flex items-center gap-3 text-sm text-[var(--muted)] mb-4">
+        <div className="flex items-center gap-3 text-sm text-[var(--muted)] mb-4 flex-wrap">
           <span className="uppercase tracking-widest font-semibold text-[var(--accent)]">{article.author}</span>
           <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
           <time>{formattedDate}</time>
           <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
           <span>{article.readTime}</span>
+          {article.type === 'writeup' && (
+            <>
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
+              <button
+                onClick={handleListen}
+                className="inline-flex items-center gap-1.5 text-[var(--accent)] hover:text-[var(--accent-hover)] transition-colors"
+              >
+                {isPlaying && !isPaused ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="6" y="4" width="4" height="16" />
+                    <rect x="14" y="4" width="4" height="16" />
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                  </svg>
+                )}
+                {isPlaying ? (isPaused ? 'Resume' : 'Pause') : 'Listen'}
+              </button>
+              {isPlaying && (
+                <button
+                  onClick={handleStop}
+                  className="text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+                >
+                  Stop
+                </button>
+              )}
+            </>
+          )}
         </div>
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
