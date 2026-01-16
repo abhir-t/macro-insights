@@ -327,6 +327,13 @@ export default function AdminForm() {
                 </button>
                 <button
                   type="button"
+                  onClick={() => insertFormat('<br>\n', '')}
+                  className="px-2 py-1 text-xs bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded hover:border-[var(--accent)]"
+                >
+                  Line Break
+                </button>
+                <button
+                  type="button"
                   onClick={() => insertFormat('<span class="size-sm">', '</span>')}
                   className="px-2 py-1 text-xs bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded hover:border-[var(--accent)]"
                 >

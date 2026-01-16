@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
+import remarkBreaks from 'remark-breaks';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Article } from '@/types';
@@ -638,6 +639,7 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
         className="prose max-w-none"
       >
         <ReactMarkdown
+          remarkPlugins={[remarkBreaks]}
           rehypePlugins={[rehypeRaw]}
           components={{
             // Handle plain URLs that look like images (fallback)
