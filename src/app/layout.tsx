@@ -21,6 +21,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  verification: {
+    google: "OX5mFQ-ux2ipIlA6uLaAXIGVk1Rq3YIC2B0vytwkcBo",
+  },
   title: {
     default: "Vantage Post",
     template: "%s | Vantage Post",
