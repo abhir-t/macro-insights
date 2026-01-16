@@ -53,7 +53,7 @@ export default function ArticleCard({ article, featured = false, index = 0 }: Ar
               <span className="w-1 h-1 rounded-full bg-[var(--accent)]" />
               <time className="text-xs text-[var(--muted)]">{formattedDate}</time>
             </div>
-            <h3 className={`headline mb-2 sm:mb-3 group-hover:text-[var(--accent)] transition-colors ${featured ? 'text-xl sm:text-2xl md:text-3xl' : 'text-lg sm:text-xl md:text-2xl'}`}>
+            <h3 className={`font-serif font-bold mb-2 sm:mb-3 group-hover:text-[var(--accent)] group-hover:italic transition-all ${featured ? 'text-xl sm:text-2xl md:text-3xl' : 'text-lg sm:text-xl md:text-2xl'}`}>
               {article.title}
             </h3>
             <p className="text-[var(--muted)] leading-relaxed line-clamp-2 text-sm">
