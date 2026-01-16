@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import Link from 'next/link';
@@ -210,6 +210,82 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
     }
   };
 
+  // Handle seeking (click on progress bar)
+  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const percentage = (clickX / rect.width) * 100;
+    const clampedPercent = Math.min(Math.max(percentage, 0), 100);
+
+    // Stop current speech
+    cleanup();
+    setIsPlaying(false);
+
+    // Calculate text position based on percentage
+    const text = textRef.current;
+    const charIndex = Math.floor((clampedPercent / 100) * text.length);
+    const remainingText = text.substring(charIndex);
+
+    // Update progress immediately
+    setProgress(clampedPercent);
+
+    // Start speaking from the new position
+    if (remainingText.length > 0) {
+      const synth = window.speechSynthesis;
+      const utterance = new SpeechSynthesisUtterance(remainingText);
+      utterance.rate = speed;
+      speedRef.current = speed;
+
+      // Calculate remaining duration
+      const remainingDuration = durationRef.current * ((100 - clampedPercent) / 100);
+
+      utterance.onstart = () => {
+        startTimeRef.current = Date.now();
+        isPlayingRef.current = true;
+        setIsPlaying(true);
+
+        // Animate progress from current position
+        const startProgress = clampedPercent;
+        const animate = () => {
+          if (!isPlayingRef.current) return;
+          const elapsed = Date.now() - startTimeRef.current;
+          const progressInRemainder = (elapsed / (remainingDuration / speedRef.current)) * (100 - startProgress);
+          const newProgress = Math.min(startProgress + progressInRemainder, 100);
+          setProgress(newProgress);
+          if (newProgress < 100 && isPlayingRef.current) {
+            animationFrameRef.current = requestAnimationFrame(animate);
+          }
+        };
+        animationFrameRef.current = requestAnimationFrame(animate);
+
+        chromeFixIntervalRef.current = setInterval(() => {
+          if (synth.speaking && !synth.paused) {
+            synth.pause();
+            synth.resume();
+          }
+        }, 10000);
+      };
+
+      utterance.onend = () => {
+        isPlayingRef.current = false;
+        setIsPlaying(false);
+        setProgress(100);
+        if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+        if (chromeFixIntervalRef.current) clearInterval(chromeFixIntervalRef.current);
+      };
+
+      utterance.onerror = (err) => {
+        if (err.error === 'interrupted') return;
+        isPlayingRef.current = false;
+        setIsPlaying(false);
+        if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+        if (chromeFixIntervalRef.current) clearInterval(chromeFixIntervalRef.current);
+      };
+
+      synth.speak(utterance);
+    }
+  };
+
   // Format time display
   const formatTime = (progressPercent: number): string => {
     const totalSeconds = estimatedDuration / speed;
@@ -315,58 +391,81 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45, duration: 0.5 }}
-          className="mb-10 p-4 sm:p-5 bg-[var(--dark)] border border-[var(--border)] rounded-lg"
+          className="mb-10 p-4 bg-[var(--dark)] border border-[var(--border)] rounded-xl"
         >
-          <div className="flex flex-col items-center gap-4">
+          {/* Main Player Row */}
+          <div className="flex items-center gap-4">
             {/* Play/Stop Button */}
             <button
               onClick={handlePlayPause}
-              className="w-14 h-14 flex items-center justify-center bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white rounded-full transition-colors shadow-lg"
+              className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white rounded-full transition-all hover:scale-105 shadow-lg"
               aria-label={isPlaying ? 'Stop' : 'Play'}
             >
               {isPlaying ? (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                  <rect x="6" y="6" width="12" height="12" rx="1" />
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <rect x="6" y="5" width="4" height="14" rx="1" />
+                  <rect x="14" y="5" width="4" height="14" rx="1" />
                 </svg>
               ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                   <polygon points="6 3 20 12 6 21 6 3" />
                 </svg>
               )}
             </button>
 
-            {/* Progress Bar */}
-            <div className="w-full max-w-md">
-              <div className="h-1.5 bg-[var(--border)] rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-[var(--accent)] rounded-full"
+            {/* Progress Section */}
+            <div className="flex-1 min-w-0">
+              {/* Clickable Progress Bar */}
+              <div
+                className="relative w-full h-2 bg-white/10 rounded-full cursor-pointer group"
+                onClick={handleSeek}
+              >
+                {/* Progress Fill */}
+                <motion.div
+                  className="absolute top-0 left-0 h-full bg-[var(--accent)] rounded-full"
                   style={{ width: `${progress}%` }}
                 />
+                {/* Hover Thumb */}
+                <div
+                  className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+                  style={{ left: `calc(${progress}% - 6px)` }}
+                />
               </div>
-              <div className="flex justify-between text-xs text-[var(--muted)] mt-2">
+              {/* Time Display */}
+              <div className="flex justify-between text-xs text-[var(--muted)] mt-1.5">
                 <span>{formatTime(progress)}</span>
                 <span>{formatTotalTime()}</span>
               </div>
             </div>
 
-            {/* Speed Controls */}
-            <div className="flex items-center justify-center gap-2">
-              <span className="text-xs text-[var(--muted)] mr-1">Speed:</span>
-              {[0.75, 1, 1.25, 1.5, 2].map((s) => (
-                <button
-                  key={s}
-                  onClick={() => handleSpeedChange(s)}
-                  className={`px-2.5 py-1 text-xs rounded-full transition-colors ${
-                    speed === s
-                      ? 'bg-[var(--accent)] text-white'
-                      : 'bg-[var(--border)] text-[var(--muted)] hover:text-white hover:bg-[var(--accent)]'
-                  }`}
-                >
-                  {s}x
-                </button>
-              ))}
+            {/* Speed Selector */}
+            <div className="flex-shrink-0">
+              <select
+                value={speed}
+                onChange={(e) => handleSpeedChange(parseFloat(e.target.value))}
+                className="bg-white/10 text-white text-xs px-2 py-1.5 rounded-lg border-none outline-none cursor-pointer hover:bg-white/20 transition-colors"
+              >
+                <option value="0.75" className="bg-[var(--dark)]">0.75x</option>
+                <option value="1" className="bg-[var(--dark)]">1x</option>
+                <option value="1.25" className="bg-[var(--dark)]">1.25x</option>
+                <option value="1.5" className="bg-[var(--dark)]">1.5x</option>
+                <option value="2" className="bg-[var(--dark)]">2x</option>
+              </select>
             </div>
           </div>
+
+          {/* Listen Label */}
+          <p className="text-xs text-[var(--muted)] mt-3 text-center">
+            <span className="inline-flex items-center gap-1.5">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <line x1="12" y1="19" x2="12" y2="23"/>
+                <line x1="8" y1="23" x2="16" y2="23"/>
+              </svg>
+              Listen to this article
+            </span>
+          </p>
         </motion.div>
       )}
 
