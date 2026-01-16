@@ -84,7 +84,7 @@ export default function WriteupsContent({ articles }: WriteupsContentProps) {
                 }}
                 transition={{ duration: 0.4 }}
               >
-                <ArticleCard article={article} index={index} featured={index === 0} />
+                <ArticleCard article={article} index={index} />
               </motion.div>
             ))}
           </motion.div>

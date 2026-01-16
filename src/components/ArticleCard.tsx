@@ -6,11 +6,10 @@ import { Article } from '@/types';
 
 interface ArticleCardProps {
   article: Article;
-  featured?: boolean;
   index?: number;
 }
 
-export default function ArticleCard({ article, featured = false, index = 0 }: ArticleCardProps) {
+export default function ArticleCard({ article, index = 0 }: ArticleCardProps) {
   const formattedDate = article.date?.seconds
     ? new Date(article.date.seconds * 1000).toLocaleDateString('en-US', {
         year: 'numeric',
@@ -29,12 +28,12 @@ export default function ArticleCard({ article, featured = false, index = 0 }: Ar
         ease: 'easeOut',
       }}
       whileHover={{ x: -4 }}
-      className={`group bg-[var(--background)] border-b border-[var(--border)] pb-6 ${featured ? 'border-l-4 border-l-[var(--accent)] pl-6' : ''}`}
+      className="group bg-[var(--background)] border-b border-[var(--border)] pb-6 border-l-4 border-l-[var(--accent)] pl-6"
     >
       <Link href={`/writeups/${article.id}`} className="flex flex-col sm:flex-row gap-4 sm:gap-6 sm:items-center pt-4">
-        {/* Thumbnail - on top for mobile, right side for desktop */}
+        {/* Thumbnail - consistent size for all cards */}
         {article.imageUrl && (
-          <div className={`relative overflow-hidden rounded-lg flex-shrink-0 shadow-sm group-hover:shadow-lg transition-shadow duration-300 w-full h-48 ${featured ? 'sm:w-48 sm:h-36' : 'sm:w-32 sm:h-24'}`}>
+          <div className="relative overflow-hidden rounded-lg flex-shrink-0 shadow-sm group-hover:shadow-lg transition-shadow duration-300 w-full h-48 sm:w-44 sm:h-32">
             <motion.img
               src={article.imageUrl}
               alt={article.title}
@@ -53,7 +52,7 @@ export default function ArticleCard({ article, featured = false, index = 0 }: Ar
               <span className="w-1 h-1 rounded-full bg-[var(--accent)]" />
               <time className="text-xs text-[var(--muted)]">{formattedDate}</time>
             </div>
-            <h3 className={`font-serif font-bold mb-2 sm:mb-3 group-hover:text-[var(--accent)] group-hover:italic transition-all ${featured ? 'text-xl sm:text-2xl md:text-3xl' : 'text-lg sm:text-xl md:text-2xl'}`}>
+            <h3 className="font-serif font-bold mb-2 sm:mb-3 group-hover:text-[var(--accent)] group-hover:italic transition-all text-xl sm:text-2xl">
               {article.title}
             </h3>
             <p className="text-[var(--muted)] leading-relaxed line-clamp-2 text-sm">
