@@ -107,6 +107,16 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
       .trim();
   };
 
+  // Unescape HTML entities that might have been escaped during storage
+  const unescapeHtml = (text: string): string => {
+    return text
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&amp;/g, '&')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'");
+  };
+
   // Initialize text on mount
   useEffect(() => {
     const cleanContent = stripHtmlAndMarkdown(article.content);
@@ -707,9 +717,12 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
             strong: ({ children }) => (
               <strong className="text-[var(--accent)] font-semibold">{children}</strong>
             ),
+            span: ({ className, style, children }) => (
+              <span className={className} style={style}>{children}</span>
+            ),
           }}
         >
-          {article.content}
+          {unescapeHtml(article.content)}
         </ReactMarkdown>
       </motion.div>
 
