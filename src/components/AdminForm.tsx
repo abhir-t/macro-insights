@@ -380,6 +380,64 @@ export default function AdminForm() {
                   + Image
                 </button>
               </div>
+
+              {/* Color Options */}
+              <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-[var(--border)]">
+                <span className="text-xs text-[var(--muted)] mr-1 self-center">Colors:</span>
+                <button
+                  type="button"
+                  onClick={() => insertFormat('<span style="color: #ef4444">', '</span>')}
+                  className="w-6 h-6 rounded bg-red-500 hover:ring-2 hover:ring-red-300"
+                  title="Red"
+                />
+                <button
+                  type="button"
+                  onClick={() => insertFormat('<span style="color: #f97316">', '</span>')}
+                  className="w-6 h-6 rounded bg-orange-500 hover:ring-2 hover:ring-orange-300"
+                  title="Orange"
+                />
+                <button
+                  type="button"
+                  onClick={() => insertFormat('<span style="color: #eab308">', '</span>')}
+                  className="w-6 h-6 rounded bg-yellow-500 hover:ring-2 hover:ring-yellow-300"
+                  title="Yellow"
+                />
+                <button
+                  type="button"
+                  onClick={() => insertFormat('<span style="color: #22c55e">', '</span>')}
+                  className="w-6 h-6 rounded bg-green-500 hover:ring-2 hover:ring-green-300"
+                  title="Green"
+                />
+                <button
+                  type="button"
+                  onClick={() => insertFormat('<span style="color: #3b82f6">', '</span>')}
+                  className="w-6 h-6 rounded bg-blue-500 hover:ring-2 hover:ring-blue-300"
+                  title="Blue"
+                />
+                <button
+                  type="button"
+                  onClick={() => insertFormat('<span style="color: #8b5cf6">', '</span>')}
+                  className="w-6 h-6 rounded bg-violet-500 hover:ring-2 hover:ring-violet-300"
+                  title="Purple"
+                />
+                <button
+                  type="button"
+                  onClick={() => insertFormat('<span style="color: #ec4899">', '</span>')}
+                  className="w-6 h-6 rounded bg-pink-500 hover:ring-2 hover:ring-pink-300"
+                  title="Pink"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const color = prompt('Enter hex color (e.g. #ff6600):');
+                    if (color) {
+                      insertFormat(`<span style="color: ${color}">`, '</span>');
+                    }
+                  }}
+                  className="w-6 h-6 rounded bg-gradient-to-br from-red-500 via-green-500 to-blue-500 hover:ring-2 hover:ring-gray-300"
+                  title="Custom Color"
+                />
+              </div>
             </div>
 
             <textarea
