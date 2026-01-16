@@ -31,33 +31,41 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
 
   // Check for speech synthesis support and mobile
   useEffect(() => {
-    const checkSupport = () => {
-      if (typeof window !== 'undefined') {
-        setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
-        const synth = window.speechSynthesis;
-        if (synth) {
-          // Try to get voices - this helps detect actual support
-          const voices = synth.getVoices();
-          if (voices.length > 0) {
-            setSpeechSupported(true);
-          } else {
-            // Wait for voices to load
-            synth.onvoiceschanged = () => {
-              setSpeechSupported(synth.getVoices().length > 0);
-            };
-            // Fallback - assume supported if API exists
-            setTimeout(() => {
-              if (speechSupported === null) {
-                setSpeechSupported(!!synth);
-              }
-            }, 1000);
-          }
-        } else {
-          setSpeechSupported(false);
-        }
-      }
+    if (typeof window === 'undefined') return;
+
+    // Check if mobile
+    const mobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    setIsMobile(mobile);
+
+    // Check speech synthesis support
+    const synth = window.speechSynthesis;
+    if (!synth) {
+      setSpeechSupported(false);
+      return;
+    }
+
+    // Try to get voices
+    const voices = synth.getVoices();
+    if (voices.length > 0) {
+      setSpeechSupported(true);
+      return;
+    }
+
+    // Wait for voices to load (some browsers load them async)
+    const handleVoicesChanged = () => {
+      setSpeechSupported(synth.getVoices().length > 0);
     };
-    checkSupport();
+    synth.addEventListener('voiceschanged', handleVoicesChanged);
+
+    // Fallback - assume supported if API exists after 500ms
+    const timeout = setTimeout(() => {
+      setSpeechSupported(true); // Assume it works
+    }, 500);
+
+    return () => {
+      synth.removeEventListener('voiceschanged', handleVoicesChanged);
+      clearTimeout(timeout);
+    };
   }, []);
 
   const formattedDate = article.date?.seconds
