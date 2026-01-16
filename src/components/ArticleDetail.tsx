@@ -14,6 +14,7 @@ interface ArticleDetailProps {
 export default function ArticleDetail({ article }: ArticleDetailProps) {
   // Audio player state
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [progress, setProgress] = useState(0);
   const [speed, setSpeed] = useState(1);
   const [estimatedDuration, setEstimatedDuration] = useState(0);
@@ -25,6 +26,7 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
   const isPlayingRef = useRef(false);
   const speedRef = useRef(1);
   const startTimeRef = useRef(0);
+  const pausedAtRef = useRef(0); // Track progress when paused
   const durationRef = useRef(0);
   const animationFrameRef = useRef<number | null>(null);
   const chromeFixIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -155,25 +157,47 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
     }
   };
 
-  // Handle play/stop
+  // Handle play/pause
   const handlePlayPause = () => {
     if (typeof window === 'undefined' || !window.speechSynthesis) {
       alert('Text-to-speech is not supported in your browser');
       return;
     }
 
-    if (isPlaying) {
-      // Stop
-      cleanup();
+    const synth = window.speechSynthesis;
+
+    // If currently playing, pause it
+    if (isPlaying && !isPaused) {
+      synth.pause();
+      setIsPaused(true);
       setIsPlaying(false);
-      setProgress(0);
+      isPlayingRef.current = false;
+      pausedAtRef.current = progress;
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
       return;
     }
 
-    // Start playing
-    cleanup();
+    // If paused, resume it
+    if (isPaused && synth.paused) {
+      synth.resume();
+      setIsPaused(false);
+      setIsPlaying(true);
+      isPlayingRef.current = true;
+      // Adjust start time to account for paused duration
+      const remainingPercent = 100 - pausedAtRef.current;
+      const remainingDuration = (durationRef.current / speedRef.current) * (remainingPercent / 100);
+      startTimeRef.current = Date.now() - ((pausedAtRef.current / 100) * (durationRef.current / speedRef.current));
+      animationFrameRef.current = requestAnimationFrame(animateProgress);
+      return;
+    }
 
-    const synth = window.speechSynthesis;
+    // Start fresh
+    cleanup();
+    setIsPaused(false);
+
     const utterance = new SpeechSynthesisUtterance(textRef.current);
     utterance.rate = speed;
     speedRef.current = speed;
@@ -182,10 +206,12 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
       startTimeRef.current = Date.now();
       isPlayingRef.current = true;
       setIsPlaying(true);
+      setIsPaused(false);
       setProgress(0);
+      pausedAtRef.current = 0;
       animationFrameRef.current = requestAnimationFrame(animateProgress);
 
-      // Chrome fix
+      // Chrome fix - pause/resume every 10s to prevent stopping
       chromeFixIntervalRef.current = setInterval(() => {
         if (synth.speaking && !synth.paused) {
           synth.pause();
@@ -197,7 +223,9 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
     utterance.onend = () => {
       isPlayingRef.current = false;
       setIsPlaying(false);
+      setIsPaused(false);
       setProgress(100);
+      pausedAtRef.current = 0;
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
       if (chromeFixIntervalRef.current) clearInterval(chromeFixIntervalRef.current);
     };
@@ -206,6 +234,7 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
       if (e.error === 'interrupted') return;
       isPlayingRef.current = false;
       setIsPlaying(false);
+      setIsPaused(false);
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
       if (chromeFixIntervalRef.current) clearInterval(chromeFixIntervalRef.current);
     };
@@ -460,11 +489,11 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
             <>
               {/* Main Player Row */}
               <div className="flex items-center gap-4">
-                {/* Play/Stop Button */}
+                {/* Play/Pause Button */}
                 <button
                   onClick={handlePlayPause}
                   className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white rounded-full transition-all hover:scale-105 shadow-lg"
-                  aria-label={isPlaying ? 'Stop' : 'Play'}
+                  aria-label={isPlaying ? 'Pause' : 'Play'}
                 >
                   {isPlaying ? (
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
