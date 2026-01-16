@@ -2,7 +2,7 @@ import { getArticles } from '@/lib/firestore';
 import InfographicsContent from '@/components/InfographicsContent';
 import { Article } from '@/types';
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 export default async function InfographicsPage() {
   let articles: Article[] = [];

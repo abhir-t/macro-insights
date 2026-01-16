@@ -2,7 +2,7 @@ import { getArticles } from '@/lib/firestore';
 import WriteupsContent from '@/components/WriteupsContent';
 import { Article } from '@/types';
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 export default async function WriteupsPage() {
   let articles: Article[] = [];

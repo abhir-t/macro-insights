@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import { getArticleById, getArticles } from '@/lib/firestore';
 import ArticleDetail from '@/components/ArticleDetail';
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 interface ArticlePageProps {
   params: Promise<{ id: string }>;
