@@ -306,17 +306,24 @@ export default function AdminForm() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => insertFormat('**', '**')}
+                  onClick={() => insertFormat('<strong>', '</strong>')}
                   className="px-2 py-1 text-xs bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded hover:border-[var(--accent)]"
                 >
                   Bold
                 </button>
                 <button
                   type="button"
-                  onClick={() => insertFormat('*', '*')}
+                  onClick={() => insertFormat('<em>', '</em>')}
                   className="px-2 py-1 text-xs bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded hover:border-[var(--accent)]"
                 >
                   Italic
+                </button>
+                <button
+                  type="button"
+                  onClick={() => insertFormat('<strong><em>', '</em></strong>')}
+                  className="px-2 py-1 text-xs bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded hover:border-[var(--accent)]"
+                >
+                  Bold+Italic
                 </button>
                 <button
                   type="button"
