@@ -386,6 +386,19 @@ export default function AdminForm() {
                 <span className="text-xs text-[var(--muted)] mr-1 self-center">Colors:</span>
                 <button
                   type="button"
+                  onClick={() => insertFormat('<span class="color-adaptive">', '</span>')}
+                  className="w-6 h-6 rounded border border-gray-400 hover:ring-2 hover:ring-gray-300"
+                  style={{ background: 'linear-gradient(to right, #000000, #ffffff)' }}
+                  title="Adaptive (white in dark, black in light)"
+                />
+                <button
+                  type="button"
+                  onClick={() => insertFormat('<span style="color: #ffffff">', '</span>')}
+                  className="w-6 h-6 rounded bg-white border border-gray-300 hover:ring-2 hover:ring-gray-300"
+                  title="White (dark mode only)"
+                />
+                <button
+                  type="button"
                   onClick={() => insertFormat('<span style="color: #ef4444">', '</span>')}
                   className="w-6 h-6 rounded bg-red-500 hover:ring-2 hover:ring-red-300"
                   title="Red"

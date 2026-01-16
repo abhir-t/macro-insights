@@ -332,3 +332,8 @@ body::after {
   filter: invert(0.9) hue-rotate(180deg);
   border-color: var(--accent);
 }
+
+/* Adaptive text color - white in dark mode, black in light mode */
+.color-adaptive {
+  color: var(--foreground);
+}
